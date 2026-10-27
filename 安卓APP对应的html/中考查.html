@@ -1,0 +1,2218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#F4F3FC">
+<title>备考助手 · 演示</title>
+<style>
+  :root{
+    /* 主渐变 */
+    --g-main:linear-gradient(135deg,#5B5BF5 0%,#8B5CF6 52%,#B26BFF 100%);
+    --g-main-2:linear-gradient(135deg,#6D6BFF 0%,#A855F7 100%);
+    --g-gold:linear-gradient(135deg,#FBD77E 0%,#E9A93C 55%,#D08A22 100%);
+    --g-rose:linear-gradient(135deg,#FF9AC4 0%,#F76BA8 100%);
+    --g-cyan:linear-gradient(135deg,#5CE1E6 0%,#3BA9F5 100%);
+    --g-green:linear-gradient(135deg,#7BE3A8 0%,#32B98A 100%);
+
+    --primary:#6C5CE7;
+    --gold:#D9A441;
+    --ink:#1B1636;
+    --ink-2:#6C6889;
+    --ink-3:#A6A2BC;
+    --line:rgba(108,92,231,.12);
+    --radius:20px;
+    --tabbar-h:58px;
+    --safe-b:env(safe-area-inset-bottom,0px);
+
+    --glass:rgba(255,255,255,.72);
+    --glass-brd:rgba(255,255,255,.85);
+    --shadow-s:0 2px 10px rgba(76,58,160,.08);
+    --shadow-m:0 10px 30px rgba(76,58,160,.13);
+    --shadow-l:0 18px 44px rgba(76,58,160,.18);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    color:var(--ink);
+    background:#EEEBFA;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    position:relative;
+  }
+  /* 桌面背景光晕 */
+  body::before,body::after{
+    content:"";position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;
+  }
+  body::before{width:520px;height:520px;left:-120px;top:-140px;background:rgba(139,92,246,.22);}
+  body::after{width:480px;height:480px;right:-140px;bottom:-160px;background:rgba(59,169,245,.20);}
+
+  /* ---------- 手机外框 ---------- */
+  .phone{
+    position:relative;z-index:1;
+    width:390px;height:844px;max-height:100vh;
+    border-radius:42px;
+    overflow:hidden;
+    display:flex;flex-direction:column;
+    background:#F6F5FD;
+    box-shadow:
+      0 0 0 11px #14152B,
+      0 0 0 12.5px rgba(255,255,255,.20),
+      0 0 0 13.5px rgba(140,120,255,.16),
+      0 34px 80px rgba(48,32,120,.35);
+  }
+  /* 屏幕内发光边 */
+  .phone::after{
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:30;border-radius:42px;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.55);
+  }
+  @media (max-width:430px),(max-height:866px){
+    .phone{width:100%;height:100%;max-height:none;border-radius:0;box-shadow:none;}
+    .phone::after{display:none;}
+  }
+
+  /* ---------- 背景流光 ---------- */
+  .ambient{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;}
+  .ambient i{position:absolute;border-radius:50%;filter:blur(46px);opacity:.6;will-change:transform;}
+  .ambient i:nth-child(1){width:280px;height:280px;left:-90px;top:-60px;background:radial-gradient(circle,#A78BFA,transparent 70%);animation:float1 16s ease-in-out infinite;}
+  .ambient i:nth-child(2){width:260px;height:260px;right:-100px;top:60px;background:radial-gradient(circle,#F9A8D4,transparent 70%);animation:float2 19s ease-in-out infinite;}
+  .ambient i:nth-child(3){width:300px;height:300px;left:-60px;bottom:-120px;background:radial-gradient(circle,#7DD3FC,transparent 70%);animation:float1 22s ease-in-out infinite reverse;}
+  .ambient i:nth-child(4){width:200px;height:200px;right:-70px;bottom:40px;background:radial-gradient(circle,#FCD34D,transparent 70%);opacity:.4;animation:float2 17s ease-in-out infinite;}
+  @keyframes float1{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(24px,30px) scale(1.12);}}
+  @keyframes float2{0%,100%{transform:translate(0,0) scale(1.05);}50%{transform:translate(-28px,22px) scale(.94);}}
+
+  /* ---------- 状态栏 ---------- */
+  .statusbar{
+    height:46px;flex:0 0 46px;
+    display:flex;align-items:flex-end;justify-content:space-between;
+    padding:0 24px 8px;
+    font-size:13px;font-weight:650;letter-spacing:.3px;
+    color:var(--ink);
+    position:relative;z-index:6;
+  }
+  .statusbar .right{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;color:var(--ink-2);}
+  .statusbar .bat{width:21px;height:10.5px;border:1.4px solid var(--ink);border-radius:3.5px;position:relative;opacity:.85;}
+  .statusbar .bat::after{content:"";position:absolute;left:1.7px;top:1.7px;bottom:1.7px;width:11px;border-radius:1.5px;background:var(--g-main);}
+  .statusbar .bat::before{content:"";position:absolute;right:-3.6px;top:2.8px;width:2px;height:4.6px;background:var(--ink);border-radius:0 1.5px 1.5px 0;opacity:.85;}
+
+  /* ---------- 应用名头部 ---------- */
+  .topbar{
+    flex:0 0 auto;position:relative;z-index:7;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:2px 18px 10px;
+  }
+  .brand{display:flex;align-items:center;gap:9px;}
+  .logo{
+    position:relative;flex:0 0 auto;
+    width:32px;height:32px;border-radius:11px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--g-main);
+    box-shadow:0 7px 16px rgba(108,92,231,.44),inset 0 1px 0 rgba(255,255,255,.45);
+  }
+  .logo span{
+    position:relative;z-index:1;
+    font-size:15.5px;font-weight:800;color:#fff;line-height:1;
+    letter-spacing:0;text-shadow:0 1px 2px rgba(50,20,120,.28);
+  }
+  .logo::after{
+    content:"";position:absolute;inset:0;border-radius:11px;pointer-events:none;
+    background:linear-gradient(160deg,rgba(255,255,255,.55),rgba(255,255,255,0) 48%);
+  }
+  .wordmark{
+    font-size:18px;font-weight:800;letter-spacing:.6px;line-height:1;
+    background:linear-gradient(120deg,#2E1F6B 0%,#6C5CE7 52%,#A855F7 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .spark{
+    font-style:normal;font-size:11px;line-height:1;margin-left:3px;
+    background:var(--g-gold);-webkit-background-clip:text;background-clip:text;color:transparent;
+    display:inline-block;transform:translateY(-5px);
+    animation:twinkle 2.6s ease-in-out infinite;
+  }
+  @keyframes twinkle{0%,100%{opacity:.45;transform:translateY(-5px) scale(.85);}50%{opacity:1;transform:translateY(-5px) scale(1.1);}}
+
+  .acts{display:flex;align-items:center;gap:8px;}
+  .icon-btn{
+    position:relative;width:34px;height:34px;border:0;border-radius:12px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.66);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    box-shadow:0 3px 9px rgba(76,58,160,.11),inset 0 1px 0 rgba(255,255,255,.95);
+    color:var(--ink-2);
+    transition:transform .2s cubic-bezier(.34,1.4,.4,1),color .2s;
+  }
+  .icon-btn svg{width:17px;height:17px;display:block;}
+  .icon-btn:active{transform:scale(.88);color:var(--primary);}
+  .icon-btn .dot{
+    position:absolute;top:6.5px;right:6.5px;width:6.5px;height:6.5px;border-radius:50%;
+    background:var(--g-gold);box-shadow:0 0 0 1.6px #F6F5FD,0 2px 6px rgba(217,164,65,.6);
+  }
+
+  /* ---------- 页面容器 ---------- */
+  .screen{flex:1 1 auto;position:relative;overflow:hidden;z-index:1;}
+  .page{
+    position:absolute;inset:0;
+    overflow-y:auto;overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    padding-bottom:28px;
+    opacity:0;visibility:hidden;
+    transform:translateY(10px) scale(.99);
+    transition:opacity .28s ease,transform .32s cubic-bezier(.32,.9,.35,1),visibility .28s;
+  }
+  .page.active{opacity:1;visibility:visible;transform:none;}
+  .page::-webkit-scrollbar{width:0;}
+
+  /* ---------- 顶部标题 ---------- */
+  .appbar{padding:0 22px 12px;position:sticky;top:0;z-index:4;}
+  .appbar::before{
+    content:"";position:absolute;inset:-20px -20px 0 -20px;bottom:0;
+    background:linear-gradient(to bottom,rgba(246,245,253,.96) 0%,rgba(246,245,253,.86) 62%,rgba(246,245,253,0) 100%);
+    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+    -webkit-mask-image:linear-gradient(to bottom,#000 62%,transparent);mask-image:linear-gradient(to bottom,#000 62%,transparent);
+    z-index:-1;pointer-events:none;
+  }
+  .appbar h1{
+    margin:0;font-size:26px;font-weight:800;letter-spacing:-.6px;
+    background:linear-gradient(120deg,#2E1F6B 0%,#6C5CE7 45%,#A855F7 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    display:inline-block;
+  }
+  .appbar .sub{margin:5px 0 0;font-size:12.5px;color:var(--ink-2);display:flex;align-items:center;gap:6px;letter-spacing:.2px;}
+  .appbar .sub::before{
+    content:"";width:14px;height:2.5px;border-radius:2px;background:var(--g-gold);flex:0 0 auto;
+  }
+
+  /* ---------- 顶部轮播 ---------- */
+  .swiper{
+    position:relative;overflow:hidden;
+    padding:2px 18px 0;
+    -webkit-user-select:none;user-select:none;
+  }
+  .swiper-track{
+    display:flex;gap:12px;
+    touch-action:pan-y;
+    transition:transform .52s cubic-bezier(.32,.9,.35,1);
+    will-change:transform;
+  }
+  .swiper-track.dragging{transition:none;cursor:grabbing;}
+  .slide{
+    position:relative;flex:0 0 auto;
+    width:calc(100% - 34px);
+    height:160px;border-radius:22px;overflow:hidden;
+    padding:18px 20px;
+    display:flex;flex-direction:column;justify-content:center;
+    color:#fff;
+    background:linear-gradient(135deg,var(--a,#5B5BF5) 0%,var(--b,#A855F7) 100%);
+    box-shadow:0 14px 30px rgba(58,40,140,.26),inset 0 1px 0 rgba(255,255,255,.30);
+    cursor:grab;
+  }
+  .slide .deco,.sub-hero .deco{position:absolute;border-radius:50%;pointer-events:none;}
+  .slide .deco.d1,.sub-hero .deco.d1{width:170px;height:170px;right:-52px;top:-72px;background:rgba(255,255,255,.16);}
+  .slide .deco.d2,.sub-hero .deco.d2{width:110px;height:110px;right:34px;bottom:-64px;background:rgba(255,255,255,.10);}
+  .slide .ico{
+    position:absolute;right:10px;bottom:-14px;font-size:84px;line-height:1;
+    opacity:.24;transform:rotate(-10deg);pointer-events:none;
+    filter:drop-shadow(0 6px 14px rgba(20,8,60,.3));
+  }
+  .slide .shine,.sub-hero .shine{
+    position:absolute;top:-40%;left:0;width:46px;height:180%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.38),transparent);
+    animation:shine 4.4s ease-in-out infinite;pointer-events:none;
+  }
+  .slide:nth-child(2) .shine{animation-delay:1.5s;}
+  .slide:nth-child(3) .shine{animation-delay:2.9s;}
+  .slide .s-tag{
+    position:relative;z-index:1;align-self:flex-start;
+    padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.4px;
+    background:rgba(255,255,255,.24);border:1px solid rgba(255,255,255,.45);
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  }
+  .slide h2{
+    position:relative;z-index:1;margin:9px 0 0;
+    font-size:19.5px;font-weight:800;letter-spacing:-.3px;line-height:1.2;
+    text-shadow:0 1px 3px rgba(30,10,80,.22);
+  }
+  .slide p{
+    position:relative;z-index:1;margin:5px 0 0;
+    font-size:12.5px;opacity:.9;letter-spacing:.2px;
+  }
+  .slide .s-cta{
+    position:relative;z-index:1;align-self:flex-start;margin-top:11px;
+    padding:5px 12px;border-radius:999px;
+    font-size:11.5px;font-weight:750;
+    color:#2E1F6B;background:rgba(255,255,255,.94);
+    box-shadow:0 4px 12px rgba(30,10,80,.18);
+    transition:transform .2s cubic-bezier(.34,1.4,.4,1);
+  }
+  .slide:active .s-cta{transform:scale(.94);}
+
+  /* 指示点 */
+  .dots{display:flex;justify-content:center;gap:6px;margin-top:13px;}
+  .dots i{
+    width:6px;height:6px;border-radius:3px;cursor:pointer;
+    background:rgba(108,92,231,.22);
+    transition:width .38s cubic-bezier(.34,1.3,.4,1),background .3s;
+  }
+  .dots i.on{width:22px;background:var(--g-main);}
+
+  /* ---------- 布局 ---------- */
+  .wrap{padding:0 18px;}
+  .card{
+    position:relative;
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+    border:1px solid var(--glass-brd);
+    border-radius:var(--radius);
+    padding:17px 18px;margin-top:14px;
+    box-shadow:var(--shadow-s),inset 0 1px 0 rgba(255,255,255,.9);
+    overflow:hidden;
+    animation:rise .5s cubic-bezier(.3,.9,.35,1) both;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  .card:nth-of-type(1){animation-delay:.04s}
+  .card:nth-of-type(2){animation-delay:.10s}
+  .card:nth-of-type(3){animation-delay:.16s}
+  .card h3{margin:0 0 7px;font-size:15.5px;font-weight:750;letter-spacing:-.2px;}
+  .card p{margin:0;font-size:13px;line-height:1.68;color:var(--ink-2);}
+
+  /* 流光扫过（轮播 slide 用） */
+  @keyframes shine{0%{transform:translateX(-140px) rotate(18deg);}55%,100%{transform:translateX(430px) rotate(18deg);}}
+
+  /* 金色徽章 */
+  .badge{
+    display:inline-flex;align-items:center;gap:5px;
+    padding:4px 9px;border-radius:999px;
+    font-size:11px;font-weight:700;letter-spacing:.3px;
+    background:var(--g-gold);color:#5A3B06;
+    box-shadow:0 3px 10px rgba(217,164,65,.38);
+  }
+  .badge.soft{background:rgba(255,255,255,.24);color:#fff;box-shadow:none;border:1px solid rgba(255,255,255,.42);}
+
+  /* ---------- 图标 sprite 通用 ---------- */
+  .gi{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* ---------- 区块标题 ---------- */
+  .sect-h{display:flex;align-items:center;justify-content:space-between;margin:18px 2px 0;}
+  .sect-h h3{
+    margin:0;display:flex;align-items:center;gap:7px;
+    font-size:15px;font-weight:750;letter-spacing:-.2px;
+  }
+  .sect-h h3::before{
+    content:"";width:3.5px;height:14px;border-radius:2px;background:var(--g-main);flex:0 0 auto;
+  }
+  .sect-h .more{font-size:11.5px;font-weight:600;color:var(--ink-3);display:flex;align-items:center;gap:2px;}
+  .sect-h .more svg{width:13px;height:13px;}
+
+  /* ---------- 图标按钮面板（金刚区） ---------- */
+  .panel{
+    margin-top:14px;padding:10px 4px 8px;border-radius:var(--radius);
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+    border:1px solid var(--glass-brd);
+    box-shadow:var(--shadow-s),inset 0 1px 0 rgba(255,255,255,.9);
+    animation:rise .5s cubic-bezier(.3,.9,.35,1) both;
+  }
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);}
+  .entry{
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    padding:10px 2px 12px;border:0;background:none;cursor:pointer;
+    font-family:inherit;border-radius:16px;
+    transition:background .2s ease;
+  }
+  .entry:active{background:rgba(108,92,231,.06);}
+  .entry:active .e-ico{transform:scale(.88);}
+  .e-ico{
+    position:relative;overflow:hidden;
+    width:46px;height:46px;border-radius:15px;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;
+    background:linear-gradient(135deg,var(--a,#5B5BF5) 0%,var(--b,#A855F7) 100%);
+    box-shadow:0 8px 16px -7px rgba(58,40,140,.62),inset 0 1px 0 rgba(255,255,255,.42);
+    transition:transform .34s cubic-bezier(.34,1.4,.4,1);
+  }
+  .e-ico::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(160deg,rgba(255,255,255,.42),rgba(255,255,255,0) 52%);
+  }
+  .e-ico svg{width:22px;height:22px;position:relative;z-index:1;}
+  .e-ch{
+    position:relative;z-index:1;line-height:1;
+    font-size:19px;font-weight:800;color:#fff;
+    text-shadow:0 1px 2px rgba(40,15,90,.22);
+  }
+  .e-t{font-size:11.5px;font-weight:600;color:var(--ink-2);letter-spacing:.1px;}
+
+  /* ---------- 行按钮列表 ---------- */
+  .list{
+    margin-top:14px;border-radius:var(--radius);overflow:hidden;
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+    border:1px solid var(--glass-brd);
+    box-shadow:var(--shadow-s),inset 0 1px 0 rgba(255,255,255,.9);
+    animation:rise .5s cubic-bezier(.3,.9,.35,1) both;
+    animation-delay:.06s;
+  }
+  .row-btn{
+    display:flex;align-items:center;gap:12px;width:100%;
+    padding:13px 15px;border:0;background:none;cursor:pointer;
+    font-family:inherit;text-align:left;
+    transition:background .2s ease;
+  }
+  .row-btn + .row-btn{border-top:1px solid rgba(108,92,231,.07);}
+  .row-btn:active{background:rgba(108,92,231,.06);}
+  .row-btn:active .r-ico{transform:scale(.9);}
+  .r-ico{
+    position:relative;overflow:hidden;
+    width:34px;height:34px;border-radius:11px;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;
+    background:linear-gradient(135deg,var(--a,#5B5BF5) 0%,var(--b,#A855F7) 100%);
+    box-shadow:0 6px 13px -6px rgba(58,40,140,.62),inset 0 1px 0 rgba(255,255,255,.4);
+    transition:transform .3s cubic-bezier(.34,1.4,.4,1);
+  }
+  .r-ico::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(160deg,rgba(255,255,255,.4),rgba(255,255,255,0) 55%);
+  }
+  .r-ico svg{width:18px;height:18px;position:relative;z-index:1;}
+  .r-t{flex:1 1 auto;font-size:13.5px;font-weight:600;color:var(--ink);}
+  .r-sub{font-size:11.5px;color:var(--ink-3);margin-left:auto;}
+  .r-r{display:flex;color:var(--ink-3);flex:0 0 auto;}
+  .r-r svg{width:15px;height:15px;}
+
+  /* ---------- 二级页面（路由层） ---------- */
+  .subpage{
+    position:absolute;left:0;right:0;top:46px;bottom:0;z-index:20;
+    display:flex;flex-direction:column;
+    background:rgba(246,245,253,.93);
+    -webkit-backdrop-filter:blur(24px) saturate(150%);backdrop-filter:blur(24px) saturate(150%);
+    transform:translateX(100%);
+    transition:transform .4s cubic-bezier(.32,.9,.3,1);
+    box-shadow:-20px 0 44px rgba(48,32,120,.20);
+    will-change:transform;
+  }
+  .subpage.open{transform:none;}
+
+  .sub-top{
+    flex:0 0 auto;display:flex;align-items:center;gap:8px;
+    padding:6px 16px 12px;
+  }
+  .sub-top h2{
+    flex:1 1 auto;margin:0;text-align:center;
+    font-size:16.5px;font-weight:750;letter-spacing:-.2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    background:linear-gradient(120deg,#2E1F6B 0%,#6C5CE7 58%,#A855F7 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .sub-iconbtn{
+    width:36px;height:36px;flex:0 0 auto;border:0;border-radius:12px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.74);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    box-shadow:0 3px 9px rgba(76,58,160,.11),inset 0 1px 0 rgba(255,255,255,.95);
+    color:var(--ink);
+    transition:transform .22s cubic-bezier(.34,1.4,.4,1),color .2s;
+  }
+  .sub-iconbtn svg{width:18px;height:18px;display:block;}
+  .sub-iconbtn:active{transform:scale(.86);color:var(--primary);}
+
+  .sub-body{
+    flex:1 1 auto;overflow-y:auto;overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;
+    padding:0 16px 30px;
+  }
+  .sub-body::-webkit-scrollbar{width:0;}
+
+  .sub-hero{
+    position:relative;overflow:hidden;
+    height:118px;border-radius:22px;padding:18px 20px;
+    display:flex;flex-direction:column;justify-content:center;
+    color:#fff;
+    background:linear-gradient(135deg,var(--a,#5B5BF5) 0%,var(--b,#A855F7) 100%);
+    box-shadow:0 14px 30px rgba(58,40,140,.26),inset 0 1px 0 rgba(255,255,255,.3);
+  }
+  .sub-hero h3{
+    position:relative;z-index:1;margin:0;
+    font-size:20px;font-weight:800;letter-spacing:-.3px;line-height:1.2;
+    text-shadow:0 1px 3px rgba(30,10,80,.22);
+  }
+  .sub-hero p{
+    position:relative;z-index:1;margin:6px 0 0;
+    font-size:12.5px;opacity:.9;letter-spacing:.2px;
+  }
+  .sub-hero .crumb{
+    position:relative;z-index:1;align-self:flex-start;margin-bottom:9px;
+    padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.4px;
+    background:rgba(255,255,255,.24);border:1px solid rgba(255,255,255,.42);
+  }
+
+  .sub-list{
+    margin-top:14px;border-radius:var(--radius);overflow:hidden;
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+    border:1px solid var(--glass-brd);
+    box-shadow:var(--shadow-s),inset 0 1px 0 rgba(255,255,255,.9);
+    animation:rise .42s cubic-bezier(.3,.9,.35,1) both;
+  }
+  .sub-item{
+    display:flex;align-items:center;gap:12px;width:100%;
+    padding:14px 15px;border:0;background:none;cursor:pointer;
+    font-family:inherit;text-align:left;
+    transition:background .2s ease;
+  }
+  .sub-item + .sub-item{border-top:1px solid rgba(108,92,231,.07);}
+  .sub-item:active{background:rgba(108,92,231,.06);}
+  .si-dot{
+    width:9px;height:9px;border-radius:50%;flex:0 0 auto;
+    background:linear-gradient(135deg,var(--a,#5B5BF5),var(--b,#A855F7));
+    box-shadow:0 2px 6px rgba(58,40,140,.35);
+    transition:transform .3s cubic-bezier(.34,1.4,.4,1);
+  }
+  .sub-item:active .si-dot{transform:scale(1.5);}
+  .si-t{flex:1 1 auto;font-size:13.5px;font-weight:600;color:var(--ink);}
+  .si-r{display:flex;color:var(--ink-3);flex:0 0 auto;}
+  .si-r svg{width:15px;height:15px;}
+
+  .sub-note{
+    margin-top:14px;padding:16px;border-radius:var(--radius);
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+    border:1px solid var(--glass-brd);
+    box-shadow:var(--shadow-s),inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .sub-note p{margin:0;font-size:13px;line-height:1.78;color:var(--ink-2);}
+  .sub-note p + p{margin-top:10px;}
+
+  /* ---------- 登录页 ---------- */
+  .login-brand{text-align:center;padding:8px 0 20px;}
+  .login-brand .logo{
+    position:relative;overflow:hidden;
+    width:56px;height:56px;border-radius:19px;margin:0 auto 14px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--g-main);
+    box-shadow:0 14px 30px rgba(108,92,231,.40),inset 0 1px 0 rgba(255,255,255,.45);
+  }
+  .login-brand .logo::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(160deg,rgba(255,255,255,.55),rgba(255,255,255,0) 48%);
+  }
+  .login-brand .logo span{
+    position:relative;z-index:1;
+    font-size:26px;font-weight:800;color:#fff;line-height:1;
+    text-shadow:0 1px 2px rgba(50,20,120,.28);
+  }
+  .login-brand h3{
+    margin:0;font-size:19px;font-weight:800;letter-spacing:-.3px;
+    background:linear-gradient(120deg,#2E1F6B 0%,#6C5CE7 58%,#A855F7 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .login-brand p{margin:7px 0 0;font-size:12.5px;color:var(--ink-2);}
+
+  .login-card{
+    padding:18px 16px 16px;border-radius:var(--radius);
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+    border:1px solid var(--glass-brd);
+    box-shadow:var(--shadow-s),inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .lg-err{
+    margin:0 0 10px;font-size:12px;font-weight:650;color:#E8508A;letter-spacing:.1px;
+  }
+  .lg-err:empty{display:none;}
+  .field{
+    display:flex;align-items:center;gap:10px;
+    height:50px;padding:0 13px;margin-bottom:12px;
+    border-radius:15px;
+    background:rgba(255,255,255,.74);
+    border:1px solid rgba(108,92,231,.12);
+    transition:border-color .22s ease,box-shadow .22s ease;
+  }
+  .field:focus-within{border-color:rgba(108,92,231,.5);box-shadow:0 0 0 3px rgba(108,92,231,.12);}
+  .field .f-ico{display:flex;flex:0 0 auto;color:var(--ink-3);transition:color .22s ease;}
+  .field:focus-within .f-ico{color:var(--primary);}
+  .field .f-ico svg{width:17px;height:17px;}
+  .field input{
+    flex:1 1 auto;min-width:0;border:0;outline:0;background:none;
+    font-family:inherit;font-size:14px;color:var(--ink);letter-spacing:.4px;
+  }
+  .field input::placeholder{color:var(--ink-3);letter-spacing:0;}
+  .f-code{
+    flex:0 0 auto;border:0;background:none;cursor:pointer;font-family:inherit;
+    padding:6px 0 6px 11px;font-size:12.5px;font-weight:700;color:var(--primary);
+    border-left:1px solid rgba(108,92,231,.16);white-space:nowrap;
+  }
+  .f-code:disabled{color:var(--ink-3);cursor:default;}
+
+  .lg-submit{
+    width:100%;height:50px;margin-top:2px;border:0;border-radius:15px;cursor:pointer;
+    font-family:inherit;font-size:15px;font-weight:750;letter-spacing:.6px;color:#fff;
+    background:var(--g-main);
+    box-shadow:0 12px 26px -9px rgba(108,92,231,.85),inset 0 1px 0 rgba(255,255,255,.35);
+    transition:transform .22s cubic-bezier(.34,1.4,.4,1);
+  }
+  .lg-submit:active{transform:scale(.972);}
+  .lg-tip{margin:11px 0 0;text-align:center;font-size:11.5px;color:var(--ink-3);}
+
+  .lg-other{margin-top:22px;}
+  .lg-line{
+    display:flex;align-items:center;gap:10px;
+    font-size:11.5px;color:var(--ink-3);letter-spacing:.2px;
+  }
+  .lg-line::before,.lg-line::after{content:"";flex:1 1 auto;height:1px;background:rgba(108,92,231,.14);}
+  .lg-ways{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+  .way{
+    display:flex;align-items:center;justify-content:center;gap:7px;
+    height:44px;border-radius:14px;cursor:pointer;font-family:inherit;
+    font-size:12.5px;font-weight:650;color:var(--ink-2);
+    background:var(--glass);border:1px solid var(--glass-brd);
+    box-shadow:var(--shadow-s),inset 0 1px 0 rgba(255,255,255,.9);
+    transition:transform .2s cubic-bezier(.34,1.4,.4,1);
+  }
+  .way:active{transform:scale(.95);}
+  .way i{width:8px;height:8px;border-radius:50%;flex:0 0 auto;}
+
+  .lg-agree{
+    margin:20px 0 0;text-align:center;
+    font-size:11px;line-height:1.7;color:var(--ink-3);
+  }
+  .lg-agree a,.lg-agree .lk{color:var(--primary);text-decoration:none;font-weight:650;cursor:pointer;}
+
+  /* ---------- 数据列表页（卡片列表 + 详情） ---------- */
+  .search{
+    display:flex;align-items:center;gap:9px;height:44px;padding:0 14px;
+    border-radius:15px;
+    background:rgba(255,255,255,.78);
+    border:1px solid rgba(108,92,231,.12);
+    box-shadow:0 2px 8px rgba(76,58,160,.07),inset 0 1px 0 rgba(255,255,255,.9);
+    transition:border-color .22s ease,box-shadow .22s ease;
+  }
+  .search:focus-within{border-color:rgba(108,92,231,.5);box-shadow:0 0 0 3px rgba(108,92,231,.12);}
+  .search svg{width:16px;height:16px;color:var(--ink-3);flex:0 0 auto;}
+  .search input{
+    flex:1 1 auto;min-width:0;border:0;outline:0;background:none;
+    font-family:inherit;font-size:13.5px;color:var(--ink);
+  }
+  .search input::placeholder{color:var(--ink-3);}
+
+  .sort-row{display:flex;gap:8px;margin-top:10px;overflow-x:auto;padding-bottom:2px;}
+  .sort-row::-webkit-scrollbar{height:0;}
+  .chip{
+    flex:0 0 auto;padding:6px 13px;border-radius:999px;cursor:pointer;
+    font-family:inherit;font-size:12px;font-weight:650;color:var(--ink-2);
+    background:rgba(255,255,255,.72);
+    border:1px solid rgba(108,92,231,.13);
+    transition:color .2s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease;
+  }
+  .chip.on{
+    color:#fff;border-color:transparent;background:var(--g-main);
+    box-shadow:0 6px 14px -6px rgba(108,92,231,.9);
+  }
+
+  .list-meta{margin:14px 2px 0;font-size:11.5px;color:var(--ink-3);letter-spacing:.2px;}
+  .list-meta b{color:var(--primary);font-weight:800;}
+
+  .dq-list{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
+  .dq-card{
+    display:block;width:100%;text-align:left;cursor:pointer;font-family:inherit;
+    padding:14px 15px;border-radius:18px;
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+    border:1px solid var(--glass-brd);
+    box-shadow:var(--shadow-s),inset 0 1px 0 rgba(255,255,255,.9);
+    transition:transform .2s cubic-bezier(.34,1.4,.4,1),box-shadow .2s ease;
+  }
+  .dq-card:active{transform:scale(.985);box-shadow:0 10px 24px rgba(76,58,160,.15);}
+  .dq-top{display:flex;align-items:center;gap:8px;}
+  .dq-idx{
+    flex:0 0 auto;width:20px;height:20px;border-radius:7px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:10.5px;font-weight:800;color:#fff;
+    background:linear-gradient(135deg,#6C5CE7,#A855F7);
+    box-shadow:0 4px 9px -4px rgba(108,92,231,.9);
+  }
+  .dq-school{
+    flex:1 1 auto;min-width:0;
+    font-size:14px;font-weight:750;color:var(--ink);letter-spacing:-.2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .dq-score{
+    flex:0 0 auto;font-size:17px;font-weight:800;letter-spacing:-.5px;line-height:1;
+    background:linear-gradient(135deg,#6C5CE7,#A855F7);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .dq-score em{font-size:10px;font-weight:700;font-style:normal;margin-left:1px;}
+  .dq-sub{margin-top:7px;font-size:12.5px;font-weight:600;color:var(--ink-2);}
+  .dq-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+  .dq-tag{
+    padding:2.5px 8px;border-radius:7px;
+    font-size:10.5px;font-weight:600;color:var(--ink-2);
+    background:rgba(108,92,231,.07);
+    border:1px solid rgba(108,92,231,.08);
+  }
+  .dq-tag.uni{color:var(--primary);background:rgba(108,92,231,.12);border-color:rgba(108,92,231,.16);}
+  .dq-empty{
+    padding:44px 20px;text-align:center;
+    font-size:13px;color:var(--ink-3);
+    border-radius:18px;border:1.5px dashed rgba(139,92,246,.28);
+    background:rgba(255,255,255,.5);
+  }
+
+  .kv-card{
+    margin-top:14px;border-radius:var(--radius);overflow:hidden;
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+    border:1px solid var(--glass-brd);
+    box-shadow:var(--shadow-s),inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .kv{display:flex;align-items:flex-start;gap:12px;padding:12.5px 15px;}
+  .kv + .kv{border-top:1px solid rgba(108,92,231,.07);}
+  .kv .k{flex:0 0 92px;font-size:12.5px;color:var(--ink-3);line-height:1.6;}
+  .kv .v{flex:1 1 auto;min-width:0;font-size:13px;font-weight:600;color:var(--ink);line-height:1.6;word-break:break-word;}
+  .kv .v.hi{font-size:17px;font-weight:800;color:var(--primary);letter-spacing:-.3px;}
+
+  /* 学校介绍卡 */
+  .intro-card{
+    margin-top:14px;padding:16px 16px 15px;border-radius:var(--radius);
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+    border:1px solid var(--glass-brd);
+    box-shadow:var(--shadow-s),inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .intro-card + .intro-card{margin-top:10px;}
+  .intro-h{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .intro-type{
+    flex:0 0 auto;padding:2.5px 8px;border-radius:7px;
+    font-size:10px;font-weight:800;letter-spacing:.4px;color:#fff;
+    background:var(--g-main);
+    box-shadow:0 4px 10px -4px rgba(108,92,231,.9);
+  }
+  .intro-type.uni{
+    background:var(--g-gold);color:#5A3B06;
+    box-shadow:0 4px 10px -4px rgba(217,164,65,.9);
+  }
+  .intro-h h4{margin:0;font-size:13.5px;font-weight:750;letter-spacing:-.2px;color:var(--ink);}
+  .intro-card p{margin:0;font-size:12.5px;line-height:1.86;color:var(--ink-2);letter-spacing:.1px;}
+  .intro-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+  .intro-tags span{
+    padding:3px 9px;border-radius:8px;
+    font-size:10.5px;font-weight:600;color:var(--primary);
+    background:rgba(108,92,231,.10);
+    border:1px solid rgba(108,92,231,.14);
+  }
+
+  /* ---------- 我的：渐变头部 ---------- */
+  .profile{
+    position:relative;margin:4px 18px 0;padding:22px 20px 24px;
+    border-radius:24px;overflow:hidden;color:#fff;
+    background:var(--g-main);
+    box-shadow:0 16px 36px rgba(108,92,231,.36),inset 0 1px 0 rgba(255,255,255,.35);
+    animation:rise .5s cubic-bezier(.3,.9,.35,1) both;
+  }
+  .profile::before{content:"";position:absolute;width:210px;height:210px;border-radius:50%;right:-70px;top:-92px;background:rgba(255,255,255,.16);}
+  .profile::after{content:"";position:absolute;width:130px;height:130px;border-radius:50%;left:-52px;bottom:-80px;background:rgba(255,255,255,.10);}
+  .profile .row{position:relative;z-index:1;display:flex;align-items:center;gap:12px;}
+  .pf-info{flex:1 1 auto;min-width:0;overflow:hidden;}
+  .pf-btn{
+    flex:0 0 auto;padding:7px 13px;border-radius:999px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.5);
+    background:rgba(255,255,255,.22);
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    color:#fff;font-family:inherit;font-size:12.5px;font-weight:700;
+    letter-spacing:.2px;white-space:nowrap;
+    transition:transform .22s cubic-bezier(.34,1.4,.4,1),background .2s;
+  }
+  .pf-btn:active{transform:scale(.93);background:rgba(255,255,255,.34);}
+  .avatar{
+    width:60px;height:60px;border-radius:50%;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;font-weight:800;color:#fff;
+    background:rgba(255,255,255,.18);
+    box-shadow:0 0 0 2.5px rgba(255,255,255,.55),0 8px 20px rgba(30,10,80,.28);
+  }
+  .profile .name{font-size:18px;font-weight:800;letter-spacing:-.3px;}
+  .profile .sub{font-size:12px;opacity:.88;margin-top:4px;}
+
+  /* ---------- 底部 Tab 栏（悬浮式） ---------- */
+  .tabbar{
+    position:relative;flex:0 0 auto;z-index:6;
+    display:flex;align-items:stretch;
+    margin:8px 14px calc(14px + var(--safe-b));
+    border-radius:26px;
+    background:rgba(255,255,255,.74);
+    -webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);
+    border:1px solid rgba(255,255,255,.92);
+    box-shadow:
+      0 1px 2px rgba(76,58,160,.05),
+      0 14px 32px rgba(76,58,160,.16),
+      inset 0 1px 0 rgba(255,255,255,.95),
+      inset 0 0 0 1px rgba(108,92,231,.05);
+  }
+  /* 滑动图标芯片 */
+  .pill{
+    position:absolute;top:0;left:0;width:32px;height:32px;border-radius:11px;
+    background:var(--g-main);
+    box-shadow:0 8px 18px rgba(108,92,231,.42),inset 0 1px 0 rgba(255,255,255,.45);
+    transition:left .44s cubic-bezier(.34,1.35,.36,1),top .3s ease;
+    pointer-events:none;z-index:1;
+  }
+  .tab{
+    position:relative;z-index:2;flex:1 1 0;
+    height:var(--tabbar-h);border:0;background:none;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    color:var(--ink-3);
+    font-family:inherit;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .tab .ico{
+    width:32px;height:32px;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .4s cubic-bezier(.34,1.4,.4,1),color .3s ease,filter .3s ease;
+  }
+  .tab .ico svg{width:21px;height:21px;display:block;}
+  .tab .lb{
+    font-size:10.5px;font-weight:600;letter-spacing:.2px;line-height:1;
+    transition:color .3s ease,font-weight .2s ease;
+  }
+  .tab.active .ico{color:#fff;transform:translateY(-1px) scale(1.04);}
+  .tab.active .lb{color:var(--primary);font-weight:750;}
+  .tab:not(.active):active .ico{transform:scale(.88);}
+
+  /* Home 条 */
+  .home-indicator{
+    position:absolute;left:50%;transform:translateX(-50%);
+    bottom:calc(var(--safe-b) + 3px);
+    width:130px;height:4.5px;border-radius:3px;
+    background:rgba(46,31,107,.20);z-index:31;pointer-events:none;
+  }
+  @media (max-width:430px){
+    .home-indicator{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- 图标 sprite（不显示，供 <use> 引用） -->
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false">
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10a2 2 0 0 1 2 2v13a1.6 1.6 0 0 0-1.6-1.6H4V5.5Z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H14a2 2 0 0 0-2 2v13a1.6 1.6 0 0 1 1.6-1.6H20V5.5Z"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M13.5 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5L13.5 3Z"/><path d="M13.5 3v5.5H19"/><path d="M9 13h6M9 16.4h4"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.6"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6.5 4h11a1 1 0 0 1 1 1v15.2l-6.5-4-6.5 4V5a1 1 0 0 1 1-1Z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12.5" r="8"/><path d="M12 8.6v4.1l2.7 1.6"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.6" y="5" width="16.8" height="15.4" rx="2.4"/><path d="M3.6 9.6h16.8M8 3.4v3.4M16 3.4v3.4"/><path d="m9.3 14.7 1.9 1.9 3.5-3.7"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9.4 17.2h5.2M10.1 20.6h3.8"/><path d="M12 3.4a6 6 0 0 0-3.5 10.9c.5.4.7 1 .7 1.5v1.4h5.6v-1.4c0-.5.2-1.1.7-1.5A6 6 0 0 0 12 3.4Z"/></symbol>
+  <symbol id="i-headphone" viewBox="0 0 24 24"><path d="M4.4 15.2v-3.4a7.6 7.6 0 0 1 15.2 0v3.4"/><rect x="2.6" y="13.4" width="4" height="6.2" rx="1.7"/><rect x="17.4" y="13.4" width="4" height="6.2" rx="1.7"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.6" y="3.6" width="7" height="7" rx="2.1"/><rect x="13.4" y="3.6" width="7" height="7" rx="2.1"/><rect x="3.6" y="13.4" width="7" height="7" rx="2.1"/><rect x="13.4" y="13.4" width="7" height="7" rx="2.1"/></symbol>
+  <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.3"/><path d="m15.4 8.6-2.1 4.7-4.7 2.1 2.1-4.7 4.7-2.1Z"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M15.5 4.6 19.4 8.5 9.2 18.7l-4.7.8.8-4.7L15.5 4.6Z"/><path d="m14.1 6 3.9 3.9"/></symbol>
+  <symbol id="i-calc" viewBox="0 0 24 24"><rect x="4.6" y="3.2" width="14.8" height="17.6" rx="2.6"/><path d="M8.2 8.3h7.6"/><path d="M8.7 12.7h.01M12 12.7h.01M15.3 12.7h.01M8.7 16.6h.01M12 16.6h.01M15.3 16.6h.01"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3.8v10.3"/><path d="m8.1 10.5 3.9 4 3.9-4"/><path d="M4.8 17.1v1.5a2 2 0 0 0 2 2h10.4a2 2 0 0 0 2-2v-1.5"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3.6 8.4 4.3L12 12.2 3.6 7.9 12 3.6Z"/><path d="m4.4 12.4 7.6 3.9 7.6-3.9"/><path d="m4.4 16.5 7.6 3.9 7.6-3.9"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.3"/><path d="m10.2 8.6 5.3 3.4-5.3 3.4V8.6Z"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M4.8 7.2h14.4M4.8 12h14.4M4.8 16.8h9.4"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3.8 2.6 5.3 5.8.9-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 10l5.8-.9L12 3.8Z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4.4 19.6h15.2"/><path d="M8 19.6v-6.3M12 19.6V6.4M16 19.6v-9.1"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.9"/><path d="M12 2.6a1.9 1.9 0 0 1 1.9 1.9v.2a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0-.3 1.8 1.6 1.6 0 0 0 1.5 1h.2a1.9 1.9 0 1 1 0 3.8h-.2a1.6 1.6 0 0 0-1.5 1 1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5v.2a1.9 1.9 0 1 1-3.8 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H2.6a1.9 1.9 0 1 1 0-3.8h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 1.8.3 1.6 1.6 0 0 0 1-1.5v-.2A1.9 1.9 0 0 1 12 2.6Z"/></symbol>
+  <symbol id="i-msg" viewBox="0 0 24 24"><path d="M20.2 12.4c0 3.9-3.7 7-8.2 7-1 0-2-.2-2.9-.5l-4.7 1.4 1.3-4a6.6 6.6 0 0 1-1.9-3.9c0-3.9 3.7-7 8.2-7s8.2 3.1 8.2 7Z"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="m9.6 5.6 6.4 6.4-6.4 6.4"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m14.4 5.6-6.4 6.4 6.4 6.4"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><path d="M6 12h.01M12 12h.01M18 12h.01"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6.8" y="2.6" width="10.4" height="18.8" rx="2.6"/><path d="M10.6 18.4h2.8"/><path d="M10.2 5.2h3.6"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.2 5 6v6c0 4 3 7.4 7 8.8 4-1.4 7-4.8 7-8.8V6l-7-2.8Z"/><path d="m9.2 12 2 2 3.6-3.8"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.4"/><path d="m20 20-4.3-4.3"/></symbol>
+</svg>
+
+<div class="phone">
+
+  <!-- 背景流光 -->
+  <div class="ambient"><i></i><i></i><i></i><i></i></div>
+
+  <!-- 状态栏 -->
+  <div class="statusbar">
+    <span id="clock">9:41</span>
+    <span class="right">
+      <span>●●●</span>
+      <span>WiFi</span>
+      <span class="bat"></span>
+    </span>
+  </div>
+
+  <!-- 应用名头部 -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"><span>中</span></div>
+      <div class="wordmark">中考查<em class="spark">✦</em></div>
+    </div>
+    <div class="acts">
+      <button class="icon-btn" aria-label="搜索">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.8" cy="10.8" r="6.4"/><path d="m20 20-4.3-4.3"/>
+        </svg>
+      </button>
+      <button class="icon-btn" aria-label="消息">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 15.5V11a6 6 0 1 0-12 0v4.5L4.6 17.4h14.8L18 15.5Z"/>
+          <path d="M10 20.2a2.2 2.2 0 0 0 4 0"/>
+        </svg>
+        <span class="dot"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 页面区 -->
+  <div class="screen">
+
+    <!-- ===== Tab 1 中考 ===== -->
+    <section class="page active" id="page-zhongkao">
+      <div class="swiper">
+        <div class="swiper-track">
+          <div class="slide" style="--a:#4F46E5;--b:#8B5CF6">
+            <span class="deco d1"></span><span class="deco d2"></span>
+            <span class="shine"></span><span class="ico">📘</span>
+            <span class="s-tag">限时</span>
+            <h2>中考冲刺计划</h2>
+            <p>名师押题 · 全科覆盖 · 30 天提分</p>
+            <span class="s-cta">立即查看 ›</span>
+          </div>
+          <div class="slide" style="--a:#E8508A;--b:#FF9AC4">
+            <span class="deco d1"></span><span class="deco d2"></span>
+            <span class="shine"></span><span class="ico">📝</span>
+            <span class="s-tag">独家</span>
+            <h2>近 5 年真题精讲</h2>
+            <p>按考点拆分 · 逐题解析</p>
+            <span class="s-cta">免费领取 ›</span>
+          </div>
+          <div class="slide" style="--a:#0E9488;--b:#34D399">
+            <span class="deco d1"></span><span class="deco d2"></span>
+            <span class="shine"></span><span class="ico">🔥</span>
+            <span class="s-tag">打卡</span>
+            <h2>每日一练上线</h2>
+            <p>坚持 30 天 · 领全套复习资料</p>
+            <span class="s-cta">开始打卡 ›</span>
+          </div>
+        </div>
+        <div class="dots"></div>
+      </div>
+      <div class="wrap">
+
+        <div class="panel">
+          <div class="grid">
+            <button class="entry">
+              <span class="e-ico" style="--a:#4F46E5;--b:#8B5CF6"><svg class="gi"><use href="#i-layers"/></svg></span>
+              <span class="e-t">中本贯通</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#E8508A;--b:#FF9AC4"><svg class="gi"><use href="#i-target"/></svg></span>
+              <span class="e-t">专项突破</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#F2733C;--b:#FBBF24"><svg class="gi"><use href="#i-bookmark"/></svg></span>
+              <span class="e-t">错题本</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#2563EB;--b:#22D3EE"><svg class="gi"><use href="#i-clock"/></svg></span>
+              <span class="e-t">模拟考试</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0E9488;--b:#34D399"><svg class="gi"><use href="#i-calendar"/></svg></span>
+              <span class="e-t">每日一练</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#D9A441;--b:#FBD77E"><svg class="gi"><use href="#i-bulb"/></svg></span>
+              <span class="e-t">知识点</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#7C3AED;--b:#EC4899"><svg class="gi"><use href="#i-headphone"/></svg></span>
+              <span class="e-t">听力训练</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#64748B;--b:#94A3B8"><svg class="gi"><use href="#i-grid"/></svg></span>
+              <span class="e-t">全部工具</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="grid">
+            <button class="entry">
+              <span class="e-ico" style="--a:#E8508A;--b:#FF9AC4"><span class="e-ch">语</span></span>
+              <span class="e-t">语文</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#2563EB;--b:#22D3EE"><span class="e-ch">数</span></span>
+              <span class="e-t">数学</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#7C3AED;--b:#EC4899"><span class="e-ch">英</span></span>
+              <span class="e-t">英语</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0891B2;--b:#22D3EE"><span class="e-ch">物</span></span>
+              <span class="e-t">物理</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0E9488;--b:#34D399"><span class="e-ch">化</span></span>
+              <span class="e-t">化学</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#F2733C;--b:#FBBF24"><span class="e-ch">政</span></span>
+              <span class="e-t">道德与法治</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#D9A441;--b:#FBD77E"><span class="e-ch">史</span></span>
+              <span class="e-t">历史</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#4F46E5;--b:#8B5CF6"><span class="e-ch">生</span></span>
+              <span class="e-t">生物</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="grid">
+            <button class="entry">
+              <span class="e-ico" style="--a:#4F46E5;--b:#8B5CF6"><svg class="gi"><use href="#i-clock"/></svg></span>
+              <span class="e-t">计时器</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#2563EB;--b:#22D3EE"><svg class="gi"><use href="#i-calc"/></svg></span>
+              <span class="e-t">计算器</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0E9488;--b:#34D399"><svg class="gi"><use href="#i-book"/></svg></span>
+              <span class="e-t">词典</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#D9A441;--b:#FBD77E"><svg class="gi"><use href="#i-bulb"/></svg></span>
+              <span class="e-t">背诵卡</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#7C3AED;--b:#EC4899"><svg class="gi"><use href="#i-note"/></svg></span>
+              <span class="e-t">笔记本</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#5B5BF5;--b:#A855F7"><svg class="gi"><use href="#i-download"/></svg></span>
+              <span class="e-t">下载中心</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#F2733C;--b:#FBBF24"><svg class="gi"><use href="#i-star"/></svg></span>
+              <span class="e-t">我的收藏</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#64748B;--b:#94A3B8"><svg class="gi"><use href="#i-chart"/></svg></span>
+              <span class="e-t">学习报告</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="grid">
+            <button class="entry">
+              <span class="e-ico" style="--a:#2563EB;--b:#7C3AED"><svg class="gi"><use href="#i-calendar"/></svg></span>
+              <span class="e-t">学习计划</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#E8508A;--b:#FF9AC4"><svg class="gi"><use href="#i-target"/></svg></span>
+              <span class="e-t">每日打卡</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0E9488;--b:#34D399"><svg class="gi"><use href="#i-msg"/></svg></span>
+              <span class="e-t">学习圈</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#D9A441;--b:#FBD77E"><svg class="gi"><use href="#i-chart"/></svg></span>
+              <span class="e-t">排行榜</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0891B2;--b:#22D3EE"><svg class="gi"><use href="#i-doc"/></svg></span>
+              <span class="e-t">答题卡</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#7C3AED;--b:#EC4899"><svg class="gi"><use href="#i-bookmark"/></svg></span>
+              <span class="e-t">家长端</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#F2733C;--b:#FBBF24"><svg class="gi"><use href="#i-pen"/></svg></span>
+              <span class="e-t">作文批改</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#64748B;--b:#94A3B8"><svg class="gi"><use href="#i-gear"/></svg></span>
+              <span class="e-t">设置</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== Tab 2 高考 ===== -->
+    <section class="page" id="page-gaokao">
+      <div class="swiper">
+        <div class="swiper-track">
+          <div class="slide" style="--a:#2563EB;--b:#7C3AED">
+            <span class="deco d1"></span><span class="deco d2"></span>
+            <span class="shine"></span><span class="ico">🎯</span>
+            <span class="s-tag">一轮</span>
+            <h2>高考一轮复习</h2>
+            <p>系统拆解考点 · 稳扎稳打</p>
+            <span class="s-cta">进入专题 ›</span>
+          </div>
+          <div class="slide" style="--a:#0891B2;--b:#22D3EE">
+            <span class="deco d1"></span><span class="deco d2"></span>
+            <span class="shine"></span><span class="ico">🗒️</span>
+            <span class="s-tag">最新</span>
+            <h2>名校模拟卷 12 套</h2>
+            <p>联考同源 · 附完整解析</p>
+            <span class="s-cta">立即开考 ›</span>
+          </div>
+          <div class="slide" style="--a:#7C3AED;--b:#EC4899">
+            <span class="deco d1"></span><span class="deco d2"></span>
+            <span class="shine"></span><span class="ico">🧭</span>
+            <span class="s-tag">规划</span>
+            <h2>志愿填报指南</h2>
+            <p>院校 / 专业 / 分数线一网打尽</p>
+            <span class="s-cta">去看看 ›</span>
+          </div>
+        </div>
+        <div class="dots"></div>
+      </div>
+      <div class="wrap">
+
+        <div class="panel">
+          <div class="grid">
+            <button class="entry">
+              <span class="e-ico" style="--a:#2563EB;--b:#7C3AED"><svg class="gi"><use href="#i-book"/></svg></span>
+              <span class="e-t">一轮复习</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0891B2;--b:#22D3EE"><svg class="gi"><use href="#i-layers"/></svg></span>
+              <span class="e-t">模拟卷</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#F2733C;--b:#FBBF24"><svg class="gi"><use href="#i-bookmark"/></svg></span>
+              <span class="e-t">错题本</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#7C3AED;--b:#EC4899"><svg class="gi"><use href="#i-compass"/></svg></span>
+              <span class="e-t">志愿填报</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0E9488;--b:#34D399"><svg class="gi"><use href="#i-pen"/></svg></span>
+              <span class="e-t">作文素材</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#4F46E5;--b:#8B5CF6"><svg class="gi"><use href="#i-calc"/></svg></span>
+              <span class="e-t">公式手册</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#D9A441;--b:#FBD77E"><svg class="gi"><use href="#i-calendar"/></svg></span>
+              <span class="e-t">学习计划</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#64748B;--b:#94A3B8"><svg class="gi"><use href="#i-grid"/></svg></span>
+              <span class="e-t">全部工具</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="grid">
+            <button class="entry">
+              <span class="e-ico" style="--a:#E8508A;--b:#FF9AC4"><span class="e-ch">语</span></span>
+              <span class="e-t">语文</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#2563EB;--b:#22D3EE"><span class="e-ch">数</span></span>
+              <span class="e-t">数学</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#7C3AED;--b:#EC4899"><span class="e-ch">英</span></span>
+              <span class="e-t">英语</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0891B2;--b:#22D3EE"><span class="e-ch">物</span></span>
+              <span class="e-t">物理</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0E9488;--b:#34D399"><span class="e-ch">化</span></span>
+              <span class="e-t">化学</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#4F46E5;--b:#8B5CF6"><span class="e-ch">生</span></span>
+              <span class="e-t">生物</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#F2733C;--b:#FBBF24"><span class="e-ch">政</span></span>
+              <span class="e-t">政治</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#D9A441;--b:#FBD77E"><span class="e-ch">地</span></span>
+              <span class="e-t">地理</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="grid">
+            <button class="entry">
+              <span class="e-ico" style="--a:#4F46E5;--b:#8B5CF6"><svg class="gi"><use href="#i-clock"/></svg></span>
+              <span class="e-t">计时器</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#2563EB;--b:#22D3EE"><svg class="gi"><use href="#i-calc"/></svg></span>
+              <span class="e-t">计算器</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0E9488;--b:#34D399"><svg class="gi"><use href="#i-book"/></svg></span>
+              <span class="e-t">词典</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#D9A441;--b:#FBD77E"><svg class="gi"><use href="#i-bulb"/></svg></span>
+              <span class="e-t">背诵卡</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#7C3AED;--b:#EC4899"><svg class="gi"><use href="#i-note"/></svg></span>
+              <span class="e-t">笔记本</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#5B5BF5;--b:#A855F7"><svg class="gi"><use href="#i-download"/></svg></span>
+              <span class="e-t">下载中心</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#F2733C;--b:#FBBF24"><svg class="gi"><use href="#i-star"/></svg></span>
+              <span class="e-t">我的收藏</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#64748B;--b:#94A3B8"><svg class="gi"><use href="#i-chart"/></svg></span>
+              <span class="e-t">学习报告</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="grid">
+            <button class="entry">
+              <span class="e-ico" style="--a:#E8508A;--b:#FF9AC4"><svg class="gi"><use href="#i-play"/></svg></span>
+              <span class="e-t">名师课堂</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#4F46E5;--b:#8B5CF6"><svg class="gi"><use href="#i-target"/></svg></span>
+              <span class="e-t">提分计划</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0E9488;--b:#34D399"><svg class="gi"><use href="#i-note"/></svg></span>
+              <span class="e-t">模考复盘</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0891B2;--b:#22D3EE"><svg class="gi"><use href="#i-chart"/></svg></span>
+              <span class="e-t">分数线</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#D9A441;--b:#FBD77E"><svg class="gi"><use href="#i-book"/></svg></span>
+              <span class="e-t">院校库</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#7C3AED;--b:#EC4899"><svg class="gi"><use href="#i-msg"/></svg></span>
+              <span class="e-t">学习圈</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#F2733C;--b:#FBBF24"><svg class="gi"><use href="#i-bookmark"/></svg></span>
+              <span class="e-t">家长端</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#64748B;--b:#94A3B8"><svg class="gi"><use href="#i-gear"/></svg></span>
+              <span class="e-t">设置</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== Tab 3 资料 ===== -->
+    <section class="page" id="page-ziliao">
+      <div class="swiper">
+        <div class="swiper-track">
+          <div class="slide" style="--a:#5B5BF5;--b:#A855F7">
+            <span class="deco d1"></span><span class="deco d2"></span>
+            <span class="shine"></span><span class="ico">📚</span>
+            <span class="s-tag">独家</span>
+            <h2>独家讲义下载</h2>
+            <p>高清 PDF · 支持打印</p>
+            <span class="s-cta">立即下载 ›</span>
+          </div>
+          <div class="slide" style="--a:#0E9488;--b:#34D399">
+            <span class="deco d1"></span><span class="deco d2"></span>
+            <span class="shine"></span><span class="ico">📐</span>
+            <span class="s-tag">模板</span>
+            <h2>错题本模板</h2>
+            <p>一键导入 · 自动归类整理</p>
+            <span class="s-cta">免费使用 ›</span>
+          </div>
+          <div class="slide" style="--a:#F0568A;--b:#FB923C">
+            <span class="deco d1"></span><span class="deco d2"></span>
+            <span class="shine"></span><span class="ico">⚡</span>
+            <span class="s-tag">速记</span>
+            <h2>高频考点速记</h2>
+            <p>睡前 10 分钟 · 记住一个考点</p>
+            <span class="s-cta">马上背 ›</span>
+          </div>
+        </div>
+        <div class="dots"></div>
+      </div>
+      <div class="wrap">
+        <div class="panel">
+          <div class="grid">
+            <button class="entry">
+              <span class="e-ico" style="--a:#5B5BF5;--b:#A855F7"><svg class="gi"><use href="#i-download"/></svg></span>
+              <span class="e-t">讲义下载</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#2563EB;--b:#22D3EE"><svg class="gi"><use href="#i-layers"/></svg></span>
+              <span class="e-t">在线题库</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#E8508A;--b:#FF9AC4"><svg class="gi"><use href="#i-play"/></svg></span>
+              <span class="e-t">视频课程</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0E9488;--b:#34D399"><svg class="gi"><use href="#i-doc"/></svg></span>
+              <span class="e-t">真题试卷</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#F2733C;--b:#FBBF24"><svg class="gi"><use href="#i-pen"/></svg></span>
+              <span class="e-t">作文素材</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#7C3AED;--b:#EC4899"><svg class="gi"><use href="#i-note"/></svg></span>
+              <span class="e-t">学习笔记</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#D9A441;--b:#FBD77E"><svg class="gi"><use href="#i-book"/></svg></span>
+              <span class="e-t">单词本</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#64748B;--b:#94A3B8"><svg class="gi"><use href="#i-grid"/></svg></span>
+              <span class="e-t">全部资料</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="grid">
+            <button class="entry">
+              <span class="e-ico" style="--a:#E8508A;--b:#FF9AC4"><span class="e-ch">语</span></span>
+              <span class="e-t">语文</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#2563EB;--b:#22D3EE"><span class="e-ch">数</span></span>
+              <span class="e-t">数学</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#7C3AED;--b:#EC4899"><span class="e-ch">英</span></span>
+              <span class="e-t">英语</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0891B2;--b:#22D3EE"><span class="e-ch">物</span></span>
+              <span class="e-t">物理</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0E9488;--b:#34D399"><span class="e-ch">化</span></span>
+              <span class="e-t">化学</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#4F46E5;--b:#8B5CF6"><span class="e-ch">生</span></span>
+              <span class="e-t">生物</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#F2733C;--b:#FBBF24"><span class="e-ch">政</span></span>
+              <span class="e-t">政治</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#D9A441;--b:#FBD77E"><span class="e-ch">地</span></span>
+              <span class="e-t">地理</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="grid">
+            <button class="entry">
+              <span class="e-ico" style="--a:#5B5BF5;--b:#A855F7"><svg class="gi"><use href="#i-download"/></svg></span>
+              <span class="e-t">下载中心</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#F2733C;--b:#FBBF24"><svg class="gi"><use href="#i-star"/></svg></span>
+              <span class="e-t">我的收藏</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0E9488;--b:#34D399"><svg class="gi"><use href="#i-book"/></svg></span>
+              <span class="e-t">词典</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#D9A441;--b:#FBD77E"><svg class="gi"><use href="#i-bulb"/></svg></span>
+              <span class="e-t">背诵卡</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#7C3AED;--b:#EC4899"><svg class="gi"><use href="#i-note"/></svg></span>
+              <span class="e-t">笔记本</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#64748B;--b:#94A3B8"><svg class="gi"><use href="#i-chart"/></svg></span>
+              <span class="e-t">学习报告</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#4F46E5;--b:#8B5CF6"><svg class="gi"><use href="#i-clock"/></svg></span>
+              <span class="e-t">计时器</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#2563EB;--b:#22D3EE"><svg class="gi"><use href="#i-calc"/></svg></span>
+              <span class="e-t">计算器</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="grid">
+            <button class="entry">
+              <span class="e-ico" style="--a:#E8508A;--b:#FF9AC4"><svg class="gi"><use href="#i-play"/></svg></span>
+              <span class="e-t">名师课堂</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#4F46E5;--b:#8B5CF6"><svg class="gi"><use href="#i-target"/></svg></span>
+              <span class="e-t">提分计划</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#0E9488;--b:#34D399"><svg class="gi"><use href="#i-note"/></svg></span>
+              <span class="e-t">模考复盘</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#2563EB;--b:#22D3EE"><svg class="gi"><use href="#i-doc"/></svg></span>
+              <span class="e-t">真题练习</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#D9A441;--b:#FBD77E"><svg class="gi"><use href="#i-bulb"/></svg></span>
+              <span class="e-t">知识点</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#7C3AED;--b:#EC4899"><svg class="gi"><use href="#i-calc"/></svg></span>
+              <span class="e-t">公式手册</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#F2733C;--b:#FBBF24"><svg class="gi"><use href="#i-bookmark"/></svg></span>
+              <span class="e-t">错题本</span>
+            </button>
+            <button class="entry">
+              <span class="e-ico" style="--a:#64748B;--b:#94A3B8"><svg class="gi"><use href="#i-msg"/></svg></span>
+              <span class="e-t">学习圈</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Tab 4 我的 ===== -->
+    <section class="page" id="page-wode">
+      <div class="appbar">
+        <h1>我的</h1>
+      </div>
+      <div class="profile">
+        <div class="row">
+          <div class="avatar" id="pfAvatar">学</div>
+          <div class="pf-info">
+            <div class="name" id="pfName">同学，你好</div>
+            <div class="sub" id="pfSub">登录后同步学习数据</div>
+          </div>
+          <button class="pf-btn" id="pfBtn" data-act="in">登录 / 注册</button>
+        </div>
+      </div>
+      <div class="wrap">
+        <div class="sect-h">
+          <h3>我的服务</h3>
+        </div>
+        <div class="list">
+          <button class="row-btn">
+            <span class="r-ico" style="--a:#F2733C;--b:#FBBF24"><svg class="gi"><use href="#i-bookmark"/></svg></span>
+            <span class="r-t">我的错题本</span>
+            <span class="r-sub">36 题待复习</span>
+            <span class="r-r"><svg class="gi"><use href="#i-right"/></svg></span>
+          </button>
+          <button class="row-btn">
+            <span class="r-ico" style="--a:#D9A441;--b:#FBD77E"><svg class="gi"><use href="#i-star"/></svg></span>
+            <span class="r-t">我的收藏</span>
+            <span class="r-sub">12 个</span>
+            <span class="r-r"><svg class="gi"><use href="#i-right"/></svg></span>
+          </button>
+          <button class="row-btn">
+            <span class="r-ico" style="--a:#2563EB;--b:#22D3EE"><svg class="gi"><use href="#i-chart"/></svg></span>
+            <span class="r-t">学习报告</span>
+            <span class="r-sub">本周 +18%</span>
+            <span class="r-r"><svg class="gi"><use href="#i-right"/></svg></span>
+          </button>
+          <button class="row-btn">
+            <span class="r-ico" style="--a:#7C3AED;--b:#EC4899"><svg class="gi"><use href="#i-msg"/></svg></span>
+            <span class="r-t">意见反馈</span>
+            <span class="r-r"><svg class="gi"><use href="#i-right"/></svg></span>
+          </button>
+          <button class="row-btn">
+            <span class="r-ico" style="--a:#64748B;--b:#94A3B8"><svg class="gi"><use href="#i-gear"/></svg></span>
+            <span class="r-t">设置</span>
+            <span class="r-r"><svg class="gi"><use href="#i-right"/></svg></span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 底部 Tab 栏 -->
+  <nav class="tabbar" role="tablist">
+    <span class="pill" id="pill"></span>
+
+    <button class="tab active" role="tab" data-target="page-zhongkao" aria-selected="true">
+      <span class="ico">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7.5 12 3l9 4.5-9 4.5-9-4.5Z"/>
+          <path d="M7 10.2V15c0 1.4 2.2 2.6 5 2.6s5-1.2 5-2.6v-4.8"/>
+          <path d="M21 7.5v5"/>
+        </svg>
+      </span>
+      <span class="lb">中考</span>
+    </button>
+
+    <button class="tab" role="tab" data-target="page-gaokao" aria-selected="false">
+      <span class="ico">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="8.2"/>
+          <circle cx="12" cy="12" r="4"/>
+          <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <span class="lb">高考</span>
+    </button>
+
+    <button class="tab" role="tab" data-target="page-ziliao" aria-selected="false">
+      <span class="ico">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10a2 2 0 0 1 2 2v13a1.6 1.6 0 0 0-1.6-1.6H4V5.5Z"/>
+          <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H14a2 2 0 0 0-2 2v13a1.6 1.6 0 0 1 1.6-1.6H20V5.5Z"/>
+        </svg>
+      </span>
+      <span class="lb">资料</span>
+    </button>
+
+    <button class="tab" role="tab" data-target="page-wode" aria-selected="false">
+      <span class="ico">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8.2" r="3.7"/>
+          <path d="M4.6 20c.7-3.6 3.8-5.6 7.4-5.6s6.7 2 7.4 5.6"/>
+        </svg>
+      </span>
+      <span class="lb">我的</span>
+    </button>
+  </nav>
+
+  <!-- 二级页面（由内容区按钮路由进来） -->
+  <div class="subpage" id="subpage" aria-hidden="true">
+    <header class="sub-top">
+      <button class="sub-iconbtn" id="subBack" aria-label="返回">
+        <svg class="gi"><use href="#i-left"/></svg>
+      </button>
+      <h2 id="subTitle">标题</h2>
+      <button class="sub-iconbtn" id="subMore" aria-label="更多">
+        <svg class="gi"><use href="#i-more"/></svg>
+      </button>
+    </header>
+    <div class="sub-body" id="subBody"></div>
+  </div>
+
+  <div class="home-indicator"></div>
+</div>
+
+<script>
+  const tabs  = Array.from(document.querySelectorAll('.tab'));
+  const pages = Array.from(document.querySelectorAll('.page'));
+  const pill  = document.getElementById('pill');
+
+  /* 芯片滑到当前 tab 的图标位置 */
+  function movePill(tab){
+    const ico = tab.querySelector('.ico');
+    if(!ico) return;
+    const w = 32, h = 32;
+    pill.style.left = (tab.offsetLeft + ico.offsetLeft + (ico.offsetWidth  - w) / 2) + 'px';
+    pill.style.top  = (tab.offsetTop  + ico.offsetTop  + (ico.offsetHeight - h) / 2) + 'px';
+  }
+
+  function switchTo(targetId, animate){
+    const tab = tabs.find(t => t.dataset.target === targetId);
+    if(!tab) return;
+
+    pages.forEach(p => p.classList.toggle('active', p.id === targetId));
+    tabs.forEach(t => {
+      const on = t === tab;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+
+    if(animate === false) pill.style.transition = 'none';
+    movePill(tab);
+    if(animate === false) requestAnimationFrame(() => { pill.style.transition = ''; });
+
+    const cur = document.getElementById(targetId);
+    if(cur) cur.scrollTop = 0;
+
+    // 切 tab 时若二级页开着，收起它
+    if(subpage.classList.contains('open')) closeSub();
+  }
+
+  tabs.forEach(t => t.addEventListener('click', () => switchTo(t.dataset.target)));
+
+  /* ---------- 顶部轮播 ---------- */
+  const GAP = 12;
+
+  function initSwiper(root){
+    const track  = root.querySelector('.swiper-track');
+    const slides = Array.from(track.children);
+    const dotBox = root.querySelector('.dots');
+    if(!track || !slides.length || !dotBox) return;
+
+    let index = 0, timer = null;
+    let dragging = false, startX = 0, startT = 0, moved = 0;
+
+    // 生成指示点
+    slides.forEach((_, i) => {
+      const d = document.createElement('i');
+      d.addEventListener('click', () => { go(i); play(); });
+      dotBox.appendChild(d);
+    });
+    const dots = Array.from(dotBox.children);
+
+    const step = () => slides[0].offsetWidth + GAP;
+
+    function go(i, anim){
+      index = Math.max(0, Math.min(slides.length - 1, i));
+      if(anim === false) track.classList.add('dragging');
+      track.style.transform = 'translateX(' + (-index * step()) + 'px)';
+      if(anim === false) requestAnimationFrame(() => track.classList.remove('dragging'));
+      dots.forEach((d, k) => d.classList.toggle('on', k === index));
+    }
+    function next(){ go(index >= slides.length - 1 ? 0 : index + 1); }
+    function play(){ stop(); timer = setInterval(() => {
+      // 只让当前显示的那一页自动播放；二级页打开时暂停
+      if(document.querySelector('.subpage.open')) return;
+      const page = root.closest('.page');
+      if(!page || page.classList.contains('active')) next();
+    }, 4200); }
+    function stop(){ if(timer) clearInterval(timer); timer = null; }
+
+    // 手势拖动 —— 用 window 监听（不用 setPointerCapture，
+    // 否则 click 事件会被重定向到 track，导致无法判断点的是哪张卡）
+    function onMove(e){
+      if(!dragging) return;
+      moved = e.clientX - startX;
+      root.__dragDist = Math.abs(moved);
+      track.style.transform = 'translateX(' + (startT + moved) + 'px)';
+    }
+    function endDrag(){
+      if(!dragging) return;
+      dragging = false;
+      track.classList.remove('dragging');
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', endDrag);
+      window.removeEventListener('pointercancel', endDrag);
+      const th = step() * 0.22;
+      if(moved < -th)      go(index + 1);
+      else if(moved > th)  go(index - 1);
+      else                 go(index);
+      play();
+    }
+    track.addEventListener('pointerdown', e => {
+      if(e.button !== 0) return;
+      dragging = true; moved = 0; startX = e.clientX;
+      startT = -index * step(); stop();
+      root.__dragDist = 0;
+      track.classList.add('dragging');
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', endDrag);
+      window.addEventListener('pointercancel', endDrag);
+    });
+
+    // 鼠标悬停暂停
+    root.addEventListener('mouseenter', stop);
+    root.addEventListener('mouseleave', () => { if(!dragging) play(); });
+
+    window.addEventListener('resize', () => go(index, false));
+
+    go(0, false);
+    play();
+    root.__go = go;
+  }
+
+  document.querySelectorAll('.swiper').forEach(initSwiper);
+
+  /* ================= 二级页面路由 =================
+     每个功能按钮 → 一个二级页；二级页里的条目 → 再深一层；
+     返回键按层级逐级回退，回到根就收起整层。            */
+
+  // 各功能页的内容（标题 → [描述, 条目...]）
+  const SUB = {
+    '真题练习':['精选近 5 年中考真题，逐题精讲',['2025 年中考真题（一）','2025 年中考真题（二）','2024 年中考真题（一）','2024 年中考真题（二）','2023 年中考真题精选']],
+    '专项突破':['按考点拆分的专项训练',['二次函数压轴','几何辅助线','阅读理解','完形填空','实验探究题']],
+    '错题本':['自动汇总错题，按知识点归类',['数学 · 32 题','物理 · 18 题','英语 · 12 题','化学 · 9 题','全部错题']],
+    '模拟考试':['全真模拟，限时作答',['中考全科模拟（一）','中考全科模拟（二）','数学单科模拟','英语单科模拟','历史模拟卷']],
+    '每日一练':['每天 10 题，坚持打卡',['今日题目 · 10 题','昨日回顾','本周汇总','连续打卡 12 天']],
+    '知识点':['各科核心知识点速查',['语文','数学','英语','物理','化学']],
+    '听力训练':['中考听力真题 + 模拟',['听力真题 2025','听力真题 2024','日常听力练习','听力技巧讲解']],
+    '全部工具':['所有功能入口都在这里',['学习类','工具类','互动类','家长端','设置']],
+    '语文':['文言文 · 现代文 · 作文',['文言文阅读','现代文阅读','古诗词默写','作文素材','语文真题']],
+    '数学':['代数 · 几何 · 统计',['二次函数','几何证明','概率与统计','方程与不等式','数学真题']],
+    '英语':['词汇 · 语法 · 听说',['核心词汇 1600','语法专题','完形填空','阅读理解','英语真题']],
+    '物理':['力学 · 电学 · 实验',['力学基础','电学专题','光学与热学','实验探究','物理真题']],
+    '化学':['方程式 · 实验 · 计算',['化学方程式','物质构成','实验操作','化学计算','化学真题']],
+    '道德与法治':['时政 · 法律 · 国情',['时政热点','法律常识','国情国策','材料分析题','真题演练']],
+    '历史':['中国古代史 · 近现代史',['中国古代史','中国近现代史','世界历史','时间轴速记','历史真题']],
+    '生物':['细胞 · 遗传 · 生态',['细胞与生物体','遗传与进化','生态系统','实验探究','生物真题']],
+    '计时器':['番茄钟，专注学习计时',['25 分钟专注','45 分钟考试模拟','自定义时长','专注时长统计']],
+    '计算器':['科学计算，支持常用函数',['基础运算','函数计算','单位换算','历史记录']],
+    '词典':['中英词典 + 成语查询',['英汉互译','成语词典','近义词辨析','我的生词本']],
+    '背诵卡':['按记忆曲线安排背诵',['今日待背','复习计划','已掌握','生词本']],
+    '笔记本':['随手记，支持图文混排',['我的笔记','新建笔记','标签分类','最近编辑']],
+    '下载中心':['离线资料统一管理',['已下载 24 个','下载中','离线讲义','清理空间']],
+    '我的收藏':['收藏过的内容都在这里',['试卷 6','知识点 4','视频 2','全部 12']],
+    '学习报告':['用数据看懂你的学习',['本周概览','各科正确率','学习时长','排名变化']],
+    '学习计划':['制定每日学习安排',['今日计划','本周计划','计划模板','完成情况']],
+    '每日打卡':['坚持打卡，赢学习奖励',['今日打卡','连续 12 天','打卡日历','奖励中心']],
+    '学习圈':['和同学一起进步',['热门话题','我的动态','学习小组','好友排行']],
+    '排行榜':['学习时长与正确率排行',['本周学习榜','正确率榜','班级榜','好友榜']],
+    '答题卡':['模拟考试电子答题卡',['语文答题卡','数学答题卡','英语答题卡','文综答题卡','理综答题卡']],
+    '家长端':['随时查看学习情况',['学习报告','错题概览','时长统计','消息通知']],
+    '作文批改':['提交作文，AI 逐句批改',['我的作文','提交作文','批改记录','范文库']],
+    '设置':['账号与使用偏好',['账号与安全','消息通知','缓存清理','关于我们']],
+    '一轮复习':['系统梳理高中全部考点',['语文','数学','英语','物理','化学','生物']],
+    '模拟卷':['名校联考模拟卷',['2026 届联考（一）','2026 届联考（二）','名校月考卷','考前押题卷']],
+    '志愿填报':['院校 · 专业 · 分数线',['院校库','专业库','分数线查询','志愿模拟']],
+    '作文素材':['高分作文素材库',['人物素材','时事热点','名言金句','范文精选']],
+    '公式手册':['高中全部公式速查',['数学公式','物理公式','化学方程式','生物概念']],
+    '讲义下载':['高清 PDF，支持打印',['语文讲义','数学讲义','英语讲义','物理讲义','化学讲义']],
+    '在线题库':['百万级题库随时刷',['按知识点','按难度','按年份','智能推荐']],
+    '视频课程':['名师录播，随时回看',['语文','数学','英语','物理','化学']],
+    '真题试卷':['历年真题打包下载',['2025 年真题','2024 年真题','2023 年真题','模拟卷']],
+    '学习笔记':['我的笔记与摘录',['全部笔记','最近编辑','标签分类','收藏夹']],
+    '单词本':['核心词汇与生词本',['核心词汇','生词本','每日单词','单词测验']],
+    '全部资料':['资料总入口',['讲义','题库','视频','真题','笔记']],
+    '我的错题本':['自动汇总的错题',['数学 · 14 题','物理 · 9 题','英语 · 7 题','化学 · 6 题']],
+    '意见反馈':['告诉我们你的想法',['功能建议','问题反馈','我的反馈记录','联系我们']],
+    '政治':['时政 · 经济 · 哲学',['时政热点','经济生活','政治生活','哲学与文化','真题演练']],
+    '地理':['自然地理 · 人文地理',['自然地理','人文地理','区域地理','读图技巧','地理真题']],
+    '名师课堂':['名师录播，随时回看',['语文专题','数学专题','英语专题','物理专题','化学专题']],
+    '提分计划':['按薄弱点定制提分路径',['诊断测试','生成计划','每日任务','提分记录']],
+    '模考复盘':['每次模考后自动分析',['最近一次模考','错题分布','失分归因','对比上次']],
+    '分数线':['历年各批次录取分数线',['2025 年分数线','2024 年分数线','2023 年分数线','批次线对比']],
+    '院校库':['全国高校信息一网打尽',['985 院校','211 院校','双一流','按省份筛选']],
+    '中考冲刺计划':['名师押题 · 全科覆盖 · 30 天提分',['冲刺规划表','名师押题卷','高频考点清单','30 天提分打卡']],
+    '近 5 年真题精讲':['按考点拆分 · 逐题解析',['2025 年真题精讲','2024 年真题精讲','2023 年真题精讲','按考点拆解']],
+    '每日一练上线':['坚持 30 天 · 领全套复习资料',['今日练习','打卡记录','连续打卡奖励','往期练习']],
+    '高考一轮复习':['系统拆解考点 · 稳扎稳打',['语文一轮','数学一轮','英语一轮','理综一轮','文综一轮']],
+    '名校模拟卷 12 套':['联考同源 · 附完整解析',['2026 届联考（一）','2026 届联考（二）','名校月考卷','考前押题卷']],
+    '志愿填报指南':['院校 / 专业 / 分数线一网打尽',['院校库','专业库','分数线查询','志愿模拟']],
+    '独家讲义下载':['高清 PDF · 支持打印',['语文讲义','数学讲义','英语讲义','物理讲义','化学讲义']],
+    '错题本模板':['一键导入 · 自动归类整理',['模板下载','导入说明','示例错题本','我的错题本']],
+    '高频考点速记':['睡前 10 分钟 · 记住一个考点',['语文速记','数学公式速记','英语短语速记','理化速记']]
+  };
+
+  const subpage  = document.getElementById('subpage');
+  const subTitle = document.getElementById('subTitle');
+  const subBody  = document.getElementById('subBody');
+  let   subStack = [];          // 页面栈：栈底是功能页，越往后层级越深
+
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  function heroHTML(crumb, title, desc, a, b){
+    return '<div class="sub-hero" style="--a:' + a + ';--b:' + b + '">' +
+             '<span class="deco d1"></span><span class="deco d2"></span><span class="shine"></span>' +
+             (crumb ? '<span class="crumb">' + esc(crumb) + '</span>' : '') +
+             '<h3>' + esc(title) + '</h3>' +
+             '<p>' + esc(desc) + '</p>' +
+           '</div>';
+  }
+  function listHTML(items, a, b){
+    return '<div class="sub-list">' + items.map(t =>
+      '<button class="sub-item">' +
+        '<span class="si-dot" style="--a:' + a + ';--b:' + b + '"></span>' +
+        '<span class="si-t">' + esc(t) + '</span>' +
+        '<span class="si-r"><svg class="gi"><use href="#i-right"/></svg></span>' +
+      '</button>').join('') + '</div>';
+  }
+
+  /* ---------- 「中本贯通」录取数据列表 ----------
+     10 个字段在手机上不可能横排，采用「卡片列表 + 详情全览」两层：
+     列表只留决策字段，代码类信息降级成标签，点开再看完整字段。 */
+
+  const DQ = [
+    { i:36, sc:'442', sn:'上海市群星职业技术学校', zc:'442401', zn:'群星数媒', major:'数字媒体艺术', uni:'上海师范大学天华学院', score:630.5 },
+    { i:2,  sc:'4001', sn:'北京市商业学校',           zc:'02', zn:'贯通培养', major:'会计事务',               uni:'北京联合大学',         score:476 },
+    { i:3,  sc:'4005', sn:'北京铁路电气化学校',       zc:'01', zn:'贯通培养', major:'城市轨道交通车辆运用与检修', uni:'北京交通运输职业学院', score:492 },
+    { i:4,  sc:'4010', sn:'北京市自动化工程学校',     zc:'01', zn:'贯通培养', major:'机电技术应用',           uni:'北京电子科技职业学院', score:501 },
+    { i:5,  sc:'4012', sn:'北京市信息管理学校',       zc:'03', zn:'贯通培养', major:'计算机应用',             uni:'北京信息职业技术学院', score:515 },
+    { i:6,  sc:'4020', sn:'北京市海淀区职业学校',     zc:'01', zn:'贯通培养', major:'学前教育',               uni:'北京城市学院',         score:528 },
+    { i:7,  sc:'4031', sn:'北京市丰台区职业教育中心学校', zc:'02', zn:'贯通培养', major:'汽车运用与维修',     uni:'北京交通运输职业学院', score:468 },
+    { i:8,  sc:'4035', sn:'北京市求实职业学校',       zc:'01', zn:'贯通培养', major:'航空服务',               uni:'北京经济管理职业学院', score:455 },
+    { i:9,  sc:'4050', sn:'北京市昌平职业学校',       zc:'04', zn:'贯通培养', major:'数字媒体技术应用',       uni:'北京工业职业技术学院', score:487 },
+    { i:10, sc:'4062', sn:'北京市大兴区第一职业学校', zc:'01', zn:'贯通培养', major:'生物制药技术',           uni:'北京电子科技职业学院', score:502 }
+  ];
+
+  let dqState = { kw: '', sort: 'score' };
+
+  function dqFiltered(){
+    const kw = dqState.kw.trim();
+    const list = DQ.filter(d => !kw ||
+      d.sn.indexOf(kw) > -1 || d.major.indexOf(kw) > -1 ||
+      d.uni.indexOf(kw) > -1 || d.zc.indexOf(kw) > -1 || d.sc.indexOf(kw) > -1);
+    if(dqState.sort === 'score')       list.sort((x, y) => y.score - x.score);
+    else if(dqState.sort === 'school') list.sort((x, y) => x.sn.localeCompare(y.sn, 'zh'));
+    else if(dqState.sort === 'code')   list.sort((x, y) => (x.sc + x.zc).localeCompare(y.sc + y.zc));
+    return list;
+  }
+
+  function dqCardHTML(d){
+    return '<button class="dq-card" data-i="' + d.i + '">' +
+      '<div class="dq-top">' +
+        '<span class="dq-idx">' + d.i + '</span>' +
+        '<span class="dq-school">' + esc(d.sn) + '</span>' +
+        '<span class="dq-score">' + d.score + '<em>分</em></span>' +
+      '</div>' +
+      '<div class="dq-sub">' + esc(d.zn) + ' · ' + esc(d.major) + '</div>' +
+      '<div class="dq-meta">' +
+        '<span class="dq-tag">学校代码 ' + esc(d.sc) + '</span>' +
+        '<span class="dq-tag">招生代码 ' + esc(d.zc) + '</span>' +
+        '<span class="dq-tag uni">' + esc(d.uni) + '</span>' +
+      '</div>' +
+    '</button>';
+  }
+
+  function dqPageHTML(){
+    return '<label class="search">' + ICON('i-search') +
+      '<input id="dqSearch" placeholder="搜索学校 / 专业 / 贯通高校">' +
+    '</label>' +
+    '<div class="sort-row">' +
+      '<button class="chip on" data-sort="score">分数线 从高到低</button>' +
+      '<button class="chip" data-sort="school">按学校名称</button>' +
+      '<button class="chip" data-sort="code">按招生代码</button>' +
+    '</div>' +
+    '<div class="list-meta">共 <b id="dqCount">0</b> 条录取数据</div>' +
+    '<div class="dq-list" id="dqList"></div>';
+  }
+
+  function dqBind(){
+    const inp   = document.getElementById('dqSearch');
+    const listE = document.getElementById('dqList');
+    const cntE  = document.getElementById('dqCount');
+    if(!inp || !listE) return;
+
+    inp.value = dqState.kw;
+    document.querySelectorAll('.sort-row .chip').forEach(c => {
+      c.classList.toggle('on', c.dataset.sort === dqState.sort);
+    });
+
+    function draw(){
+      const arr = dqFiltered();
+      if(cntE) cntE.textContent = arr.length;
+      listE.innerHTML = arr.length
+        ? arr.map(dqCardHTML).join('')
+        : '<div class="dq-empty">没有匹配的记录，换个关键词试试</div>';
+    }
+
+    inp.addEventListener('input', () => { dqState.kw = inp.value; draw(); });
+    document.querySelectorAll('.sort-row .chip').forEach(c => {
+      c.addEventListener('click', () => {
+        dqState.sort = c.dataset.sort;
+        document.querySelectorAll('.sort-row .chip').forEach(x => x.classList.toggle('on', x === c));
+        draw();
+      });
+    });
+    listE.addEventListener('click', e => {
+      const card = e.target.closest('.dq-card');
+      if(!card) return;
+      const d = DQ.find(x => String(x.i) === card.dataset.i);
+      if(d) openRecord(d);
+    });
+
+    draw();
+  }
+
+  function kvRow(k, v, cls){
+    return '<div class="kv"><span class="k">' + k + '</span>' +
+           '<span class="v' + (cls ? ' ' + cls : '') + '">' + esc(v) + '</span></div>';
+  }
+
+  // 学校介绍（按学校名归集，同一所学校的多个志愿共用一份介绍）
+  const SCHOOL_INFO = {
+    '上海市群星职业技术学校': {
+      intro: '上海市群星职业技术学校是一所公办全日制中等职业学校，长期深耕数字媒体与信息技术类专业，建有影视后期、动画制作等实训中心。学校与上海师范大学天华学院联合开展中本贯通培养，学生完成中职阶段学业并考核合格后，可直升对接本科专业继续就读。',
+      tags: ['公办中职', '数字媒体特色', '中本贯通试点']
+    },
+    '北京市商业学校': {
+      intro: '北京市商业学校始建于 1964 年，是国家级重点中等职业学校，财经商贸类专业办学实力突出。学校与北京联合大学等高校开展贯通培养合作，会计、电子商务等专业就业与升学渠道稳定。',
+      tags: ['国家级重点', '财经商贸', '公办']
+    },
+    '北京铁路电气化学校': {
+      intro: '北京铁路电气化学校是一所以轨道交通为特色的中等职业学校，开设城市轨道交通车辆运用与检修、供电等专业，实训设备对接行业标准，与北京交通运输职业学院开展贯通培养。',
+      tags: ['轨道交通特色', '行业办学', '实训基地']
+    },
+    '北京市自动化工程学校': {
+      intro: '北京市自动化工程学校专注机电技术与自动化方向，机电技术应用专业为学校传统优势专业，与北京电子科技职业学院联合开展中本贯通培养，注重实操与工程能力训练。',
+      tags: ['机电特色', '工科强校', '贯通培养']
+    },
+    '北京市信息管理学校': {
+      intro: '北京市信息管理学校以信息技术类专业见长，计算机应用专业覆盖软件开发、网络运维与数字媒体方向。学校与北京信息职业技术学院合作开展中本贯通培养，实训环境完善。',
+      tags: ['信息技术', '计算机特色', '公办中职']
+    },
+    '北京市海淀区职业学校': {
+      intro: '北京市海淀区职业学校开设学前教育、信息技术、财经商贸等多个专业群，学前教育专业办学历史悠久，与北京城市学院开展中本贯通培养，艺术与教育类课程体系完整。',
+      tags: ['学前教育', '综合类', '海淀区']
+    },
+    '北京市丰台区职业教育中心学校': {
+      intro: '北京市丰台区职业教育中心学校是一所综合性中等职业学校，汽车运用与维修专业为学校重点建设专业，与北京交通运输职业学院开展贯通培养，建有整车实训车间。',
+      tags: ['汽车运用与维修', '综合类', '实训车间']
+    },
+    '北京市求实职业学校': {
+      intro: '北京市求实职业学校以航空服务、旅游服务类专业为特色，航空服务专业注重形体、礼仪与客舱服务训练，与北京经济管理职业学院联合开展中本贯通培养。',
+      tags: ['航空服务', '服务类特色', '贯通培养']
+    },
+    '北京市昌平职业学校': {
+      intro: '北京市昌平职业学校开设数字媒体技术应用、信息技术等专业，注重项目化教学与作品产出，与北京工业职业技术学院开展中本贯通培养，校园实训条件良好。',
+      tags: ['数字媒体', '项目化教学', '昌平区']
+    },
+    '北京市大兴区第一职业学校': {
+      intro: '北京市大兴区第一职业学校开设生物制药技术等专业，依托区域医药产业资源开展校企合作，与北京电子科技职业学院联合开展中本贯通培养。',
+      tags: ['生物制药', '校企合作', '大兴区']
+    }
+  };
+
+  // 贯通本科院校介绍（按院校名归集）
+  const UNI_INFO = {
+    '上海师范大学天华学院': {
+      intro: '上海师范大学天华学院是经教育部批准设立的民办全日制普通本科高校，位于上海市嘉定区，学科覆盖工学、管理学、艺术学等门类。学校数字媒体艺术专业强调技术与艺术融合，与多所中职学校开展中本贯通联合培养。',
+      tags: ['民办本科', '数字媒体艺术', '嘉定区']
+    },
+    '北京联合大学': {
+      intro: '北京联合大学是北京市属综合性大学，学科门类齐全，下设应用文理、商务、师范等多个学院，与多所中等职业学校开展中本贯通培养合作，升学通道稳定。',
+      tags: ['市属本科', '综合类', '公办']
+    },
+    '北京交通运输职业学院': {
+      intro: '北京交通运输职业学院是北京市属公办高等职业院校，以交通运输类专业为特色，建有城市轨道交通、汽车运用等大型实训基地，与行业企业合作紧密。',
+      tags: ['公办高职', '交通特色', '实训基地']
+    },
+    '北京电子科技职业学院': {
+      intro: '北京电子科技职业学院是国家示范性高等职业院校，机电、电子、生物等专业办学实力突出，实训条件一流，与多家企业共建产业学院。',
+      tags: ['国家示范', '公办高职', '工科强校']
+    },
+    '北京信息职业技术学院': {
+      intro: '北京信息职业技术学院是北京市属公办高职院校，以电子信息类专业为特色，计算机应用、通信技术等专业办学历史悠久，与信息产业企业合作深入。',
+      tags: ['公办高职', '电子信息', '计算机特色']
+    },
+    '北京城市学院': {
+      intro: '北京城市学院是经教育部批准设立的民办全日制普通本科高校，学科覆盖教育、艺术、管理等领域，学前教育专业办学基础扎实，实践教学体系完善。',
+      tags: ['民办本科', '学前教育', '艺术教育']
+    },
+    '北京经济管理职业学院': {
+      intro: '北京经济管理职业学院是北京市属公办高职院校，以财经管理、航空服务类专业见长，注重岗位能力训练与职业素养养成。',
+      tags: ['公办高职', '财经管理', '服务类']
+    },
+    '北京工业职业技术学院': {
+      intro: '北京工业职业技术学院是国家示范性高等职业院校，工科专业体系完整，建有智能制造、数字媒体等实训中心，产教融合特色鲜明。',
+      tags: ['国家示范', '公办高职', '智能制造']
+    }
+  };
+
+  function introCard(type, name, info){
+    return '<div class="intro-card">' +
+      '<div class="intro-h">' +
+        '<span class="intro-type' + (type === '本科' ? ' uni' : '') + '">' + type + '</span>' +
+        '<h4>' + esc(name) + '</h4>' +
+      '</div>' +
+      '<p>' + esc(info.intro) + '</p>' +
+      '<div class="intro-tags">' + info.tags.map(t => '<span>' + esc(t) + '</span>').join('') + '</div>' +
+    '</div>';
+  }
+
+  // 中本贯通 = 中职 + 本科，两所学校各一张介绍卡
+  function introHTML(d){
+    const a = SCHOOL_INFO[d.sn] || {
+      intro: '「' + d.sn + '」是一所全日制职业学校，开设' + d.major + '等专业，与' + d.uni + '联合开展中本贯通培养。',
+      tags: ['职业学校', '中本贯通']
+    };
+    const b = UNI_INFO[d.uni] || {
+      intro: '「' + d.uni + '」与' + d.sn + '联合开展中本贯通培养，学生完成中职阶段学业并考核合格后可升入该校继续就读。',
+      tags: ['贯通本科', '联合培养']
+    };
+    return introCard('中职', d.sn, a) + introCard('本科', d.uni, b);
+  }
+
+  // 单条记录详情：10 个字段完整列出
+  function openRecord(d){
+    const html =
+      heroHTML('中本贯通', d.sn, d.zn + ' · ' + d.major, '#5B5BF5', '#8B5CF6') +
+      '<div class="kv-card">' +
+        kvRow('序号', d.i) +
+        kvRow('学校代码', d.sc) +
+        kvRow('学校名称', d.sn) +
+        kvRow('招生代码', d.zc) +
+        kvRow('志愿名称', d.zn) +
+        kvRow('专业名称', d.major) +
+        kvRow('贯通高校', d.uni) +
+        kvRow('最低录取分数线', d.score + ' 分', 'hi') +
+      '</div>' +
+      introHTML(d);
+    pushPage({ title: d.sn, html: html });
+  }
+
+  const CUSTOM = {
+    '中本贯通': { html: dqPageHTML, bind: dqBind }
+  };
+
+  function renderTop(){
+    const s = subStack[subStack.length - 1];
+    if(!s) return;
+    subTitle.textContent = s.title;
+    subBody.innerHTML = s.html;
+    subBody.scrollTop = 0;
+    if(typeof s.bind === 'function') s.bind();   // 自定义页渲染后重新绑事件
+  }
+  function pushPage(page){
+    subStack.push(page);
+    renderTop();
+    subpage.classList.add('open');
+    subpage.setAttribute('aria-hidden', 'false');
+  }
+
+  // 打开某个功能页（栈重置）
+  function routeTo(name, a, b){
+    const c = CUSTOM[name];
+    if(c){
+      subStack = [{ title: name, html: c.html(), bind: c.bind }];
+      renderTop();
+      subpage.classList.add('open');
+      subpage.setAttribute('aria-hidden', 'false');
+      return;
+    }
+    const meta = SUB[name];
+    const desc  = meta ? meta[0] : '内容正在整理中，敬请期待';
+    const items = meta ? meta[1] : ['全部内容','最近更新','我的收藏','历史记录'];
+    subStack = [{ title: name, html: heroHTML('', name, desc, a, b) + listHTML(items, a, b) }];
+    renderTop();
+    subpage.classList.add('open');
+    subpage.setAttribute('aria-hidden', 'false');
+  }
+
+  // 二级页里再点条目 → 进入更深一层
+  function openItem(title, crumb, a, b){
+    const html = heroHTML(crumb, title, '内容详情 · 示例数据', a, b) +
+      '<div class="sub-note"><p>这里是「' + esc(title) + '」的详情区，后续可以放题目、解析、收藏按钮等任何内容。</p>' +
+      '<p>点左上角返回，可以回到上一级页面。</p></div>';
+    pushPage({ title: title, html: html });
+  }
+
+  function hideSub(){
+    clearLoginTimer();
+    subStack = [];
+    subpage.classList.remove('open');
+    subpage.setAttribute('aria-hidden', 'true');
+  }
+
+  // 返回：优先出栈，栈空则关闭整层
+  function goBack(){
+    if(subStack.length > 1){
+      subStack.pop();
+      renderTop();
+      return;
+    }
+    hideSub();
+  }
+  function closeSub(){ hideSub(); }
+
+  // 内容区按钮 → 路由
+  function bindRouter(){
+    document.querySelectorAll('.entry, .row-btn').forEach(el => {
+      el.addEventListener('click', () => {
+        const lb = el.querySelector('.e-t') || el.querySelector('.r-t');
+        if(!lb) return;
+        const ico = el.querySelector('.e-ico') || el.querySelector('.r-ico');
+        const cs  = ico ? getComputedStyle(ico) : null;
+        const a = (cs && cs.getPropertyValue('--a').trim()) || '#5B5BF5';
+        const b = (cs && cs.getPropertyValue('--b').trim()) || '#A855F7';
+        routeTo(lb.textContent.trim(), a, b);
+      });
+    });
+  }
+  bindRouter();
+
+  // 轮播卡 → 路由（拖动超过 8px 视为翻页，不触发跳转）
+  document.querySelectorAll('.swiper-track').forEach(tr => {
+    tr.addEventListener('click', e => {
+      const slide = e.target.closest('.slide');
+      if(!slide) return;
+      const sw = tr.closest('.swiper');
+      if(sw && sw.__dragDist > 8) return;
+      const h2 = slide.querySelector('h2');
+      if(!h2) return;
+      const cs = getComputedStyle(slide);
+      const a = cs.getPropertyValue('--a').trim() || '#5B5BF5';
+      const b = cs.getPropertyValue('--b').trim() || '#A855F7';
+      routeTo(h2.textContent.trim(), a, b);
+    });
+  });
+
+  /* ---------- 登录 ---------- */
+  let loggedIn = false;
+  let lgTimer  = null;
+  const pfAvatar = document.getElementById('pfAvatar');
+  const pfName   = document.getElementById('pfName');
+  const pfSub    = document.getElementById('pfSub');
+  const pfBtn    = document.getElementById('pfBtn');
+
+  function clearLoginTimer(){ if(lgTimer){ clearInterval(lgTimer); lgTimer = null; } }
+
+  function renderProfile(){
+    if(loggedIn){
+      pfAvatar.textContent = '备';
+      pfName.textContent   = '备考小战士';
+      pfSub.textContent    = '已连续学习 12 天';
+      pfBtn.textContent    = '退出登录';
+      pfBtn.dataset.act    = 'out';
+    }else{
+      pfAvatar.textContent = '学';
+      pfName.textContent   = '同学，你好';
+      pfSub.textContent    = '登录后同步学习数据';
+      pfBtn.textContent    = '登录 / 注册';
+      pfBtn.dataset.act    = 'in';
+    }
+  }
+
+  const ICON = id => '<svg class="gi"><use href="#' + id + '"/></svg>';
+
+  function openLogin(){
+    clearLoginTimer();
+    const html =
+      '<div class="login-brand">' +
+        '<div class="logo"><span>中</span></div>' +
+        '<h3>欢迎回来</h3>' +
+        '<p>登录「中考查」同步学习数据与错题本</p>' +
+      '</div>' +
+      '<div class="login-card">' +
+        '<p class="lg-err" id="lgErr"></p>' +
+        '<label class="field">' +
+          '<span class="f-ico">' + ICON('i-phone') + '</span>' +
+          '<input id="lgPhone" type="tel" inputmode="numeric" maxlength="11" placeholder="请输入手机号">' +
+        '</label>' +
+        '<label class="field">' +
+          '<span class="f-ico">' + ICON('i-shield') + '</span>' +
+          '<input id="lgCode" type="text" inputmode="numeric" maxlength="6" placeholder="请输入验证码">' +
+          '<button class="f-code" id="lgGet">获取验证码</button>' +
+        '</label>' +
+        '<button class="lg-submit" id="lgSubmit">登录 / 注册</button>' +
+        '<p class="lg-tip">未注册的手机号将自动创建账号</p>' +
+      '</div>' +
+      '<div class="lg-other">' +
+        '<span class="lg-line">其他登录方式</span>' +
+        '<div class="lg-ways">' +
+          '<button class="way"><i style="background:#07C160"></i>微信</button>' +
+          '<button class="way"><i style="background:#12B7F5"></i>QQ</button>' +
+          '<button class="way"><i style="background:#E6162D"></i>微博</button>' +
+        '</div>' +
+      '</div>' +
+      '<p class="lg-agree">登录即表示同意 <span class="lk">用户协议</span> 和 <span class="lk">隐私政策</span></p>';
+
+    subStack = [{ title: '登录 / 注册', html: html }];
+    renderTop();
+    subpage.classList.add('open');
+    subpage.setAttribute('aria-hidden', 'false');
+    bindLogin();
+  }
+
+  function bindLogin(){
+    const phone  = document.getElementById('lgPhone');
+    const code   = document.getElementById('lgCode');
+    const getB   = document.getElementById('lgGet');
+    const errEl  = document.getElementById('lgErr');
+    const submit = document.getElementById('lgSubmit');
+    const okPhone = v => /^1[3-9]\d{9}$/.test(v);
+
+    getB.addEventListener('click', () => {
+      if(getB.disabled) return;
+      if(!okPhone(phone.value.trim())){ errEl.textContent = '请输入正确的 11 位手机号'; return; }
+      errEl.textContent = '';
+      let cd = 60;
+      getB.disabled = true;
+      getB.textContent = cd + 's 后重发';
+      clearLoginTimer();
+      lgTimer = setInterval(() => {
+        cd--;
+        if(cd <= 0){ clearLoginTimer(); getB.disabled = false; getB.textContent = '获取验证码'; }
+        else getB.textContent = cd + 's 后重发';
+      }, 1000);
+    });
+
+    submit.addEventListener('click', () => {
+      if(!okPhone(phone.value.trim())){ errEl.textContent = '请输入正确的 11 位手机号'; return; }
+      if(!/^\d{4,6}$/.test(code.value.trim())){ errEl.textContent = '请输入 4-6 位验证码'; return; }
+      errEl.textContent = '';
+      loggedIn = true;
+      renderProfile();
+      hideSub();
+    });
+  }
+
+  // 「我的」页登录按钮 / 资料卡
+  pfBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if(pfBtn.dataset.act === 'out'){ loggedIn = false; renderProfile(); }
+    else openLogin();
+  });
+  document.querySelector('.profile').addEventListener('click', () => { if(!loggedIn) openLogin(); });
+
+  renderProfile();
+
+  // 二级页内的条目点击（事件委托，拿到当前页配色）
+  subBody.addEventListener('click', e => {
+    const item = e.target.closest('.sub-item');
+    if(!item) return;
+    const hero = subBody.querySelector('.sub-hero');
+    const cs = hero ? getComputedStyle(hero) : null;
+    const a = (cs && cs.getPropertyValue('--a').trim()) || '#5B5BF5';
+    const b = (cs && cs.getPropertyValue('--b').trim()) || '#A855F7';
+    const title = item.querySelector('.si-t').textContent.trim();
+    const crumb = subTitle.textContent;
+    openItem(title, crumb, a, b);
+  });
+
+  document.getElementById('subBack').addEventListener('click', goBack);
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape' && subpage.classList.contains('open')) goBack();
+  });
+
+
+  /* 状态栏时间 */
+  function tick(){
+    const d = new Date();
+    document.getElementById('clock').textContent =
+      d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tick();
+  setInterval(tick, 10000);
+
+  /* 初始化 + 尺寸变化时复位胶囊 */
+  function reset(){ switchTo(document.querySelector('.tab.active').dataset.target, false); }
+  window.addEventListener('load', reset);
+  window.addEventListener('resize', reset);
+  reset();
+
+  /* 预留：页面内跳转可直接调用 go('page-ziliao') / route('中本贯通') */
+  window.go = switchTo;
+  window.route = routeTo;
+</script>
+</body>
+</html>

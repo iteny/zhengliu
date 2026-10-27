@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>河马工具箱</title>
+<style>
+  /* ===================== 变量 ===================== */
+  :root{
+    --blue:#0071E3;
+    --ink:#14161C;
+    --ink-2:#4C525E;
+    --ink-3:#6B7280;
+    --line:rgba(20,30,60,.10);
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; margin:0; }
+
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1000px 700px at 50% -10%, #FFFFFF 0%, #EDEFF7 42%, #DDE1EE 100%);
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh; padding:24px;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ===================== 机身 ===================== */
+  .device{
+    position:relative;
+    width:390px;
+    height:844px;
+    height:min(844px, calc(100vh - 48px));   /* 窗口太矮时自动缩短，保证完整可见 */
+    min-height:560px;
+    border-radius:54px;
+    background:#F4F6FC;
+    overflow:hidden;
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,.10),
+      0 0 0 11px #FCFCFE,
+      0 0 0 12px #E1E4EC,
+      0 0 0 13px #F3F4F8,
+      0 34px 80px -28px rgba(40,50,90,.35),
+      0 10px 26px -18px rgba(40,50,90,.22);
+  }
+
+  /* ===================== 流动彩色背景 ===================== */
+  .bg{
+    position:absolute; inset:0; z-index:0; overflow:hidden;
+    background:linear-gradient(165deg,#F8FBFF 0%,#FDF5FB 44%,#F2FBFA 100%);
+  }
+  .bg i{
+    position:absolute; display:block; border-radius:50%;
+    filter:blur(44px); opacity:.9;
+    will-change:transform;
+  }
+  .b1{ width:300px;height:300px; left:-70px;  top:-60px;   background:radial-gradient(circle at 35% 35%,#A6C6FF,rgba(166,198,255,0)); animation:float1 18s ease-in-out infinite; }
+  .b2{ width:290px;height:290px; right:-90px; top:40px;    background:radial-gradient(circle at 50% 50%,#D8B6FF,rgba(216,182,255,0)); animation:float2 22s ease-in-out infinite; }
+  .b3{ width:330px;height:330px; left:-110px; bottom:110px;background:radial-gradient(circle at 50% 50%,#FFBDDB,rgba(255,189,219,0)); animation:float3 20s ease-in-out infinite; }
+  .b4{ width:270px;height:270px; right:-70px; bottom:-50px;background:radial-gradient(circle at 50% 50%,#A4EEE3,rgba(164,238,227,0)); animation:float1 25s ease-in-out infinite reverse; }
+  .b5{ width:230px;height:230px; left:80px;   top:290px;   background:radial-gradient(circle at 50% 50%,#FFE0A6,rgba(255,224,166,0)); animation:float2 27s ease-in-out infinite; }
+  @keyframes float1{
+    0%,100%{ transform:translate(0,0) scale(1); }
+    50%    { transform:translate(34px,42px) scale(1.12); }
+  }
+  @keyframes float2{
+    0%,100%{ transform:translate(0,0) scale(1); }
+    50%    { transform:translate(-42px,28px) scale(1.08); }
+  }
+  @keyframes float3{
+    0%,100%{ transform:translate(0,0) scale(1.06); }
+    50%    { transform:translate(28px,-36px) scale(.98); }
+  }
+
+  /* ===================== 液态玻璃基类 ===================== */
+  .glass{
+    position:relative;
+    background:linear-gradient(150deg, rgba(255,255,255,.62) 0%, rgba(255,255,255,.30) 52%, rgba(255,255,255,.46) 100%);
+    backdrop-filter:blur(26px) saturate(190%) brightness(1.06);
+    -webkit-backdrop-filter:blur(26px) saturate(190%) brightness(1.06);
+    border:1px solid rgba(255,255,255,.68);
+    box-shadow:
+      inset 0 1.5px 0 rgba(255,255,255,.98),
+      inset 0 -1.5px 0 rgba(255,255,255,.50),
+      inset 1.5px 0 0 rgba(255,255,255,.45),
+      inset -1.5px 0 0 rgba(255,255,255,.45),
+      0 10px 30px -10px rgba(50,60,110,.20),
+      0 2px 6px -3px rgba(50,60,110,.12);
+  }
+  /* 色散描边（液玻的彩虹边缘） */
+  .glass::before{
+    content:""; position:absolute; inset:-1px; border-radius:inherit;
+    padding:1px; pointer-events:none;
+    background:conic-gradient(from 150deg at 50% 50%,
+      rgba(255,255,255,.95),
+      rgba(175,215,255,.55),
+      rgba(255,190,240,.50),
+      rgba(190,255,238,.55),
+      rgba(255,255,255,.95));
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+    mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite:exclude;
+    opacity:.85;
+  }
+  /* 液态流光 */
+  .glass::after{
+    content:""; position:absolute; inset:0; border-radius:inherit;
+    pointer-events:none; z-index:0;
+    background:linear-gradient(118deg,
+      transparent 24%,
+      rgba(255,255,255,.55) 42%,
+      rgba(255,255,255,.12) 50%,
+      transparent 68%);
+    background-size:240% 240%;
+    animation:liquid 9s ease-in-out infinite;
+    opacity:.75;
+  }
+  @keyframes liquid{
+    0%,100%{ background-position:0% 50%; }
+    50%    { background-position:100% 50%; }
+  }
+  .glass > *{ position:relative; z-index:1; }
+
+  /* ===================== 状态栏 ===================== */
+  .statusbar{
+    position:absolute; top:0; left:0; right:0; height:46px; z-index:30;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 28px; font-size:14.5px; font-weight:600; letter-spacing:-.1px;
+    color:var(--ink);
+  }
+  .statusbar .icons{ display:flex; align-items:center; gap:5px; }
+  .statusbar svg{ display:block; }
+
+  /* 顶部柔化遮罩，保证状态栏可读 */
+  .topfade{
+    position:absolute; top:0; left:0; right:0; height:70px; z-index:7;
+    pointer-events:none;
+    background:linear-gradient(180deg, rgba(255,255,255,.72) 0%, rgba(255,255,255,.28) 54%, transparent 100%);
+  }
+
+  /* ===================== 滚动内容 ===================== */
+  .pages{
+    position:absolute; inset:0; z-index:1;
+    overflow-y:auto; overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    padding:0 0 128px;
+  }
+  .pages::-webkit-scrollbar{ width:0; }
+
+  .page{ display:none; padding-top:116px; }
+  .page.active{ display:block; animation:pageIn .46s cubic-bezier(.32,.72,0,1) both; }
+  @keyframes pageIn{
+    from{ opacity:0; transform:translateY(12px) scale(.992); }
+    to  { opacity:1; transform:none; }
+  }
+
+  /* ===================== 玻璃卡片 ===================== */
+  .body{ padding:0 14px 28px; }
+
+  /* ===================== 工具宫格 ===================== */
+  .panel{ border-radius:26px; padding:15px 6px 20px; }
+  .panel-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    padding:0 14px 14px;
+  }
+  .panel-title{ font-size:15px; font-weight:650; letter-spacing:-.3px; color:var(--ink); }
+  .panel-sub{ font-size:12px; color:var(--ink-3); }
+
+  .tools{
+    display:grid; grid-template-columns:repeat(4,1fr);
+    row-gap:20px; column-gap:3px;
+  }
+  .tool{
+    display:flex; flex-direction:column; align-items:center; gap:7px;
+    border:0; background:none; padding:0; cursor:pointer; font-family:inherit;
+  }
+  .tool-ic{
+    width:52px; height:52px; border-radius:17px;
+    display:grid; place-items:center;
+    background:
+      radial-gradient(circle at 30% 22%, rgba(var(--c),.26), transparent 68%),
+      linear-gradient(155deg, rgba(255,255,255,.88), rgba(255,255,255,.48));
+    border:1px solid rgba(255,255,255,.92);
+    box-shadow:
+      inset 0 1.2px 0 #FFFFFF,
+      inset 0 -1px 0 rgba(255,255,255,.62),
+      0 6px 14px -8px rgba(50,60,110,.42);
+    backdrop-filter:blur(12px) saturate(170%);
+    -webkit-backdrop-filter:blur(12px) saturate(170%);
+    transition:transform .18s cubic-bezier(.32,.72,0,1);
+  }
+  .tool-ic svg{
+    width:25px; height:25px;
+    fill:none; stroke:rgb(var(--c)); stroke-width:1.7;
+    stroke-linecap:round; stroke-linejoin:round;
+  }
+  .tool-name{
+    font-size:10.5px; font-weight:500; letter-spacing:-.2px;
+    color:var(--ink-2); text-align:center;
+    line-height:1.24; max-width:100%; padding:0;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .tool:active .tool-ic{ transform:scale(.9); }
+
+  /* 卡片堆叠间距 */
+  .body > .panel + .panel{ margin-top:14px; }
+
+  /* ===================== 分类页：左导航 + 右内容 ===================== */
+  .cat-wrap{ display:flex; gap:10px; align-items:flex-start; }
+
+  .catnav{
+    width:96px; flex:0 0 96px;
+    border-radius:22px; padding:8px 6px;
+    display:flex; flex-direction:column; gap:2px;
+    position:sticky; top:110px;
+    max-height:calc(100vh - 250px);
+    overflow-y:auto; overscroll-behavior:contain;
+  }
+  .catnav::-webkit-scrollbar{ width:0; }
+  .catnav::after{ display:none; }
+
+  .cnav{
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    padding:8px 4px; border:0; background:none; cursor:pointer;
+    border-radius:16px; font-family:inherit;
+    font-size:11.5px; font-weight:500; letter-spacing:-.1px;
+    color:var(--ink-2);
+    transition:background .2s ease, color .2s ease, box-shadow .2s ease, transform .16s ease;
+  }
+  .cnav svg{
+    width:21px; height:21px;
+    fill:none; stroke:currentColor; stroke-width:1.7;
+    stroke-linecap:round; stroke-linejoin:round;
+    transition:transform .24s cubic-bezier(.32,.72,0,1);
+  }
+  .cnav.active{
+    color:rgb(var(--c));
+    background:linear-gradient(155deg, rgba(255,255,255,.96), rgba(255,255,255,.64));
+    box-shadow:
+      inset 0 1px 0 #FFFFFF,
+      inset 0 -1px 0 rgba(255,255,255,.6),
+      0 3px 9px -5px rgba(50,60,110,.45);
+  }
+  .cnav.active svg{ transform:scale(1.06); }
+  .cnav:active{ transform:scale(.95); }
+
+  .catpanel{
+    flex:1 1 auto; min-width:0;
+    border-radius:22px; padding:14px 8px 12px;
+  }
+  .catpanel::after{ display:none; }
+
+  .catrow{
+    width:100%; display:flex; align-items:center; gap:10px;
+    padding:9px 9px; border:0; background:none; cursor:pointer;
+    font-family:inherit; font-size:13px; letter-spacing:-.1px;
+    color:var(--ink); border-radius:14px; text-align:left;
+    transition:background .18s ease;
+  }
+  .catrow:hover{ background:rgba(255,255,255,.5); }
+  .catrow:active{ background:rgba(255,255,255,.8); }
+
+  .rowico{
+    width:34px; height:34px; flex:0 0 34px; border-radius:11px;
+    display:grid; place-items:center;
+    background:linear-gradient(155deg, rgba(255,255,255,.94), rgba(255,255,255,.56));
+    border:1px solid rgba(255,255,255,.92);
+    box-shadow:
+      inset 0 1px 0 #FFFFFF,
+      inset 0 -1px 0 rgba(255,255,255,.6),
+      0 2px 6px -4px rgba(50,60,110,.45);
+  }
+  .rowico svg{
+    width:19px; height:19px;
+    fill:none; stroke:rgb(var(--c)); stroke-width:1.7;
+    stroke-linecap:round; stroke-linejoin:round;
+  }
+  .catrow .nm{
+    flex:1 1 auto; min-width:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .catrow .chev{
+    width:13px; height:13px; flex:0 0 13px;
+    fill:none; stroke:#BFC4D0; stroke-width:2;
+    stroke-linecap:round; stroke-linejoin:round;
+  }
+
+  /* ===================== 工具详情页 ===================== */
+  .detail{
+    position:absolute; inset:0; z-index:20;
+    transform:translateX(100%);
+    transition:transform .42s cubic-bezier(.32,.72,0,1);
+    pointer-events:none;
+    background:rgba(255,255,255,.62);
+    backdrop-filter:blur(26px) saturate(180%);
+    -webkit-backdrop-filter:blur(26px) saturate(180%);
+  }
+  .detail.open{
+    transform:none; pointer-events:auto;
+    box-shadow:-16px 0 44px -22px rgba(30,40,80,.38);
+  }
+
+  .d-topbar{
+    position:absolute; top:48px; left:12px; right:12px; height:54px; z-index:2;
+    display:flex; align-items:center; gap:8px;
+    padding:0 10px; border-radius:20px;
+  }
+  .d-back{
+    width:34px; height:34px; flex:0 0 34px; border-radius:50%;
+    display:grid; place-items:center; cursor:pointer;
+    border:1px solid rgba(255,255,255,.9);
+    background:rgba(255,255,255,.62);
+    box-shadow:
+      inset 0 1px 0 #FFFFFF,
+      0 2px 6px -3px rgba(50,60,110,.4);
+    color:var(--blue);
+    transition:transform .16s ease;
+  }
+  .d-back svg{
+    width:18px; height:18px;
+    fill:none; stroke:currentColor; stroke-width:2.2;
+    stroke-linecap:round; stroke-linejoin:round;
+  }
+  .d-back:active{ transform:scale(.92); }
+  .d-gap{ width:34px; flex:0 0 34px; }
+
+  .d-title{
+    flex:1 1 auto; min-width:0; text-align:center;
+    font-size:16px; font-weight:650; letter-spacing:-.3px; color:var(--ink);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+
+  .d-body{
+    position:absolute; inset:0;
+    padding:118px 14px 40px;
+    overflow-y:auto;
+  }
+  .d-body::-webkit-scrollbar{ width:0; }
+
+  .d-card{
+    border-radius:26px; padding:46px 22px;
+    text-align:center;
+  }
+  .d-ico{
+    width:66px; height:66px; margin:0 auto 18px; border-radius:21px;
+    display:grid; place-items:center;
+    background:
+      radial-gradient(circle at 30% 22%, rgba(var(--c),.28), transparent 68%),
+      linear-gradient(155deg, rgba(255,255,255,.96), rgba(255,255,255,.56));
+    border:1px solid rgba(255,255,255,.94);
+    box-shadow:
+      inset 0 1.4px 0 #FFFFFF,
+      inset 0 -1px 0 rgba(255,255,255,.6),
+      0 10px 22px -12px rgba(50,60,110,.5);
+  }
+  .d-ico svg{
+    width:31px; height:31px;
+    fill:none; stroke:rgb(var(--c)); stroke-width:1.55;
+    stroke-linecap:round; stroke-linejoin:round;
+  }
+  .d-name{
+    font-size:17px; font-weight:650; letter-spacing:-.3px; color:var(--ink);
+  }
+  .d-desc{
+    margin-top:8px; font-size:13px; line-height:1.65; color:var(--ink-3);
+  }
+
+  /* 悬浮收藏按钮 */
+  .favbtn{
+    position:absolute; right:18px; bottom:30px; z-index:3;
+    width:54px; height:54px; border-radius:50%;
+    display:grid; place-items:center; padding:0; cursor:pointer;
+    border:1px solid rgba(255,255,255,.92);
+    background:linear-gradient(155deg, rgba(255,255,255,.94), rgba(255,255,255,.58));
+    box-shadow:
+      inset 0 1.4px 0 #FFFFFF,
+      inset 0 -1px 0 rgba(255,255,255,.62),
+      0 10px 24px -12px rgba(50,60,110,.55);
+    backdrop-filter:blur(16px) saturate(170%);
+    -webkit-backdrop-filter:blur(16px) saturate(170%);
+    color:#7C8496;
+    transition:color .2s ease, box-shadow .26s ease, transform .18s cubic-bezier(.32,.72,0,1);
+  }
+  .favbtn svg{
+    width:24px; height:24px;
+    fill:none; stroke:currentColor; stroke-width:1.7;
+    stroke-linecap:round; stroke-linejoin:round;
+    transition:fill .2s ease, stroke .2s ease;
+  }
+  .favbtn:active{ transform:scale(.9); }
+
+  .favbtn.on{
+    color:rgb(var(--c));
+    box-shadow:
+      inset 0 1.4px 0 #FFFFFF,
+      inset 0 -1px 0 rgba(255,255,255,.62),
+      0 10px 24px -12px rgba(50,60,110,.5),
+      0 0 0 3px rgba(var(--c),.16);
+  }
+  .favbtn.on svg{
+    fill:rgb(var(--c));
+    fill-opacity:.92;
+  }
+  .favbtn.pop{ animation:pop .4s cubic-bezier(.32,.72,0,1); }
+  @keyframes pop{
+    0%  { transform:scale(.84); }
+    55% { transform:scale(1.12); }
+    100%{ transform:scale(1); }
+  }
+
+  /* ===================== 登录弹层 ===================== */
+  .sheet-mask{
+    position:absolute; inset:0; z-index:22;
+    background:rgba(30,36,60,.22);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    opacity:0; pointer-events:none;
+    transition:opacity .28s ease;
+  }
+  .sheet-mask.open{ opacity:1; pointer-events:auto; }
+
+  .loginsheet{
+    position:absolute; left:0; right:0; bottom:0; z-index:23;
+    padding:10px 20px 40px;
+    border-radius:30px 30px 0 0;
+    background:rgba(255,253,249,.95);
+    backdrop-filter:blur(30px) saturate(180%);
+    -webkit-backdrop-filter:blur(30px) saturate(180%);
+    border-top:1px solid rgba(255,255,255,.92);
+    box-shadow:0 -22px 54px -30px rgba(30,40,80,.5);
+    transform:translateY(103%);
+    transition:transform .44s cubic-bezier(.32,.72,0,1);
+  }
+  .loginsheet.open{ transform:none; }
+
+  .ls-handle{
+    width:38px; height:4.5px; border-radius:3px;
+    background:rgba(70,80,110,.20);
+    margin:0 auto 18px;
+  }
+  .ls-head{ display:flex; align-items:center; justify-content:space-between; }
+  .ls-title{ font-size:20px; font-weight:700; letter-spacing:-.4px; color:var(--ink); }
+  .ls-close{
+    width:30px; height:30px; border-radius:50%; padding:0; border:0; cursor:pointer;
+    background:rgba(120,132,155,.14);
+    display:grid; place-items:center;
+    transition:background .2s ease;
+  }
+  .ls-close:hover{ background:rgba(120,132,155,.22); }
+  .ls-close svg{
+    width:11px; height:11px;
+    stroke:rgba(70,80,110,.75); stroke-width:2.6;
+    fill:none; stroke-linecap:round;
+  }
+  .ls-sub{ margin:6px 0 20px; font-size:13px; color:var(--ink-3); letter-spacing:-.1px; }
+
+  /* 微信登录按钮 */
+  .wx-btn{
+    width:100%; height:52px; border:0; border-radius:15px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    font-family:inherit; font-size:16px; font-weight:650; letter-spacing:-.2px;
+    color:#FFFFFF; background:#07C160;
+    box-shadow:
+      0 10px 22px -12px rgba(7,193,96,.8),
+      inset 0 1px 0 rgba(255,255,255,.28),
+      inset 0 -1px 0 rgba(0,90,45,.25);
+    transition:transform .16s ease, filter .2s ease;
+  }
+  .wx-btn svg{ width:24px; height:24px; display:block; }
+  .wx-btn:active{ transform:scale(.985); filter:brightness(.93); }
+  .wx-btn[data-busy]{ opacity:.75; pointer-events:none; }
+
+  .ls-tip{
+    margin:14px 0 0; text-align:center;
+    font-size:11px; letter-spacing:-.1px; color:#A9B0BE;
+  }
+
+  /* 联系我们 */
+  .ls-sep{
+    height:1px; margin:22px 0 14px;
+    background:linear-gradient(90deg,transparent,rgba(150,165,190,.42),transparent);
+  }
+  /* 客服二维码 */
+  .qr-wrap{ margin-top:18px; text-align:center; }
+  .qr-box{
+    width:116px; height:116px; margin:0 auto;
+    padding:8px; border-radius:14px;
+    background:#FFFFFF;
+    box-shadow:
+      0 6px 16px -10px rgba(30,40,80,.45),
+      inset 0 0 0 1px rgba(0,0,0,.05);
+  }
+  .qr-box svg{ width:100%; height:100%; display:block; fill:#14161C; }
+  .qr-tip{
+    margin:10px 0 0; font-size:11.5px; letter-spacing:-.1px; color:var(--ink-3);
+  }
+
+  /* 登录后的头像态 */
+  .login.account{
+    width:30px; height:30px; padding:0; border-radius:50%;
+    display:grid; place-items:center;
+    background:linear-gradient(160deg,#2E9BFF 0%,#0071E3 100%);
+  }
+  .login.account svg{
+    width:19px; height:19px;
+    fill:none; stroke:#FFFFFF; stroke-width:1.9;
+    stroke-linecap:round; stroke-linejoin:round;
+  }
+
+  /* 用户菜单 */
+  .userpop{
+    position:absolute; top:104px; right:14px; z-index:24;
+    width:184px; padding:6px;
+    border-radius:16px;
+    background:rgba(255,253,249,.97);
+    backdrop-filter:blur(24px) saturate(180%);
+    -webkit-backdrop-filter:blur(24px) saturate(180%);
+    border:1px solid rgba(255,255,255,.9);
+    box-shadow:0 16px 38px -20px rgba(30,40,80,.45);
+    opacity:0; transform:translateY(-6px) scale(.96);
+    transform-origin:top right;
+    pointer-events:none;
+    transition:opacity .2s ease, transform .24s cubic-bezier(.32,.72,0,1);
+  }
+  .userpop.open{ opacity:1; transform:none; pointer-events:auto; }
+
+  .up-name{
+    padding:10px 12px 9px; margin-bottom:4px;
+    font-size:12px; letter-spacing:-.1px; color:var(--ink-3);
+    border-bottom:1px solid rgba(180,195,220,.35);
+  }
+  .up-logout{
+    width:100%; height:38px; padding:0 12px;
+    border:0; border-radius:11px; cursor:pointer;
+    background:none; text-align:left;
+    font-family:inherit; font-size:14px; letter-spacing:-.2px; color:#D9433F;
+    transition:background .18s ease;
+  }
+  .up-logout:hover{ background:rgba(217,67,63,.08); }
+
+  /* ===================== 收藏页空态 ===================== */
+  .fav-empty{ padding:52px 20px 56px; text-align:center; }
+  .fav-empty svg{
+    width:30px; height:30px; margin:0 auto 14px; display:block;
+    fill:none; stroke:#C3C8D4; stroke-width:1.4;
+    stroke-linecap:round; stroke-linejoin:round;
+  }
+  .fav-empty .t{ font-size:14px; font-weight:600; letter-spacing:-.2px; color:var(--ink); }
+  .fav-empty .d{ margin-top:6px; font-size:12.5px; color:var(--ink-3); }
+
+  .ph{
+    border-radius:26px;
+    padding:44px 22px;
+    text-align:center;
+  }
+  .ph .ico{
+    width:30px; height:30px; margin:0 auto 14px;
+    fill:none; stroke:rgba(80,95,130,.55); stroke-width:1.4;
+    stroke-linecap:round; stroke-linejoin:round;
+  }
+  .ph .t{
+    font-size:15px; font-weight:600; letter-spacing:-.2px; color:var(--ink);
+  }
+  .ph .d{
+    margin-top:6px; font-size:13px; line-height:1.6; letter-spacing:-.1px;
+    color:var(--ink-3);
+  }
+
+  /* ===================== 顶部玻璃导航 ===================== */
+  .topbar{
+    position:absolute; top:48px; left:12px; right:12px; height:54px; z-index:9;
+    display:flex; align-items:center; gap:9px;
+    padding:0 12px; border-radius:20px;
+  }
+
+  .brand{ display:flex; align-items:center; gap:7px; flex:0 0 auto; }
+  .brand .logo{
+    width:27px; height:27px; border-radius:9px;
+    display:grid; place-items:center;
+    background:linear-gradient(150deg, rgba(255,255,255,.95), rgba(255,255,255,.55));
+    border:1px solid rgba(255,255,255,.9);
+    box-shadow:
+      inset 0 1px 0 #FFF,
+      inset 0 -1px 0 rgba(255,255,255,.5),
+      0 3px 8px -3px rgba(50,60,110,.28);
+  }
+  .brand .logo svg{ width:17px; height:17px; display:block; }
+  .brand .name{
+    font-size:15px; font-weight:650; letter-spacing:-.4px;
+    color:var(--ink); white-space:nowrap;
+  }
+
+  /* 搜索条（玻璃内嵌） */
+  .searchbar{
+    flex:1 1 auto; min-width:0; height:32px;
+    display:flex; align-items:center; gap:6px;
+    padding:0 9px; border-radius:10px;
+    background:rgba(255,255,255,.42);
+    border:1px solid rgba(255,255,255,.55);
+    box-shadow:
+      inset 0 1px 2px rgba(50,60,110,.10),
+      inset 0 -1px 0 rgba(255,255,255,.65);
+    transition:background .22s ease;
+  }
+  .searchbar:focus-within{ background:rgba(255,255,255,.68); }
+  .searchbar svg{ width:14px; height:14px; flex:0 0 14px; color:rgba(80,95,130,.7); }
+  .searchbar input{
+    flex:1; min-width:0; width:100%;
+    background:none; border:0; outline:none; padding:0;
+    color:var(--ink); font-size:13px; font-family:inherit; letter-spacing:-.1px;
+  }
+  .searchbar input::placeholder{ color:rgba(80,95,130,.62); }
+
+  /* 搜索框清除按钮 */
+  .s-clear{
+    width:16px; height:16px; flex:0 0 16px; padding:0;
+    border:0; border-radius:50%; cursor:pointer;
+    background:rgba(120,132,155,.42);
+    display:none; place-items:center;
+  }
+  .s-clear.show{ display:grid; }
+  .s-clear svg{
+    width:9px; height:9px; flex:none;
+    stroke:#FFFFFF; stroke-width:2.6;
+    stroke-linecap:round; fill:none;
+  }
+
+  /* ===================== 搜索面板 ===================== */
+  .searchpanel{
+    position:absolute; top:102px; left:0; right:0; bottom:0; z-index:8;
+    background:linear-gradient(180deg, rgba(255,253,249,.90), rgba(250,247,241,.96));
+    backdrop-filter:blur(22px) saturate(170%);
+    -webkit-backdrop-filter:blur(22px) saturate(170%);
+    opacity:0; transform:translateY(-8px);
+    pointer-events:none;
+    transition:opacity .22s ease, transform .28s cubic-bezier(.32,.72,0,1);
+  }
+  .searchpanel.open{ opacity:1; transform:none; pointer-events:auto; }
+
+  .sp-inner{
+    height:100%; overflow-y:auto;
+    padding:14px 14px 118px;
+  }
+  .sp-inner::-webkit-scrollbar{ width:0; }
+
+  .sp-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    padding:2px 8px 14px;
+  }
+  .sp-head .ttl{ font-size:14px; font-weight:650; letter-spacing:-.3px; color:var(--ink); }
+  .sp-head .cnt{ font-size:12px; color:var(--ink-3); }
+
+  .sp-empty{
+    display:none; padding:70px 20px; text-align:center;
+    font-size:13px; color:var(--ink-3); letter-spacing:-.1px;
+  }
+
+  /* 登录按钮（蓝色玻璃） */
+  .login{
+    flex:0 0 auto; height:30px; padding:0 13px;
+    border-radius:980px; border:1px solid rgba(255,255,255,.55); cursor:pointer;
+    font-family:inherit; font-size:13px; font-weight:600;
+    color:#FFFFFF;
+    background:linear-gradient(160deg, rgba(28,146,255,.95) 0%, rgba(0,113,227,.98) 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.55),
+      inset 0 -1px 0 rgba(0,60,130,.35),
+      0 4px 12px -4px rgba(0,113,227,.62);
+    transition:transform .16s ease, box-shadow .22s ease;
+  }
+  .login:active{ transform:scale(.96); }
+  .login:hover{ box-shadow:inset 0 1px 0 rgba(255,255,255,.65), inset 0 -1px 0 rgba(0,60,130,.35), 0 6px 16px -4px rgba(0,113,227,.75); }
+
+  /* ===================== 底部悬浮玻璃 Tab ===================== */
+  .tabbar{
+    position:absolute; left:14px; right:14px; bottom:30px; height:64px; z-index:9;
+    display:flex; align-items:stretch;
+    border-radius:30px;
+    padding:6px;
+  }
+
+  .tab{
+    flex:1; border:0; background:none; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    color:#5F6675; font-size:10px; font-weight:600; letter-spacing:0;
+    font-family:inherit; position:relative; border-radius:24px;
+    transition:color .22s ease, background .22s ease;
+  }
+  .tab svg{
+    width:23px; height:23px; display:block;
+    fill:none; stroke:currentColor; stroke-width:1.6;
+    stroke-linecap:round; stroke-linejoin:round;
+    transition:transform .26s cubic-bezier(.32,.72,0,1);
+  }
+  .tab svg, .tab span{ position:relative; z-index:1; }
+  .tab.active{ color:var(--blue); }
+  .tab.active::before{
+    content:""; position:absolute; inset:0; border-radius:24px;
+    background:linear-gradient(160deg, rgba(255,255,255,.85), rgba(255,255,255,.42));
+    box-shadow:
+      inset 0 1px 0 #FFF,
+      inset 0 -1px 0 rgba(255,255,255,.55),
+      0 4px 10px -4px rgba(50,60,110,.28);
+  }
+  .tab:active svg{ transform:scale(.92); }
+
+  /* ===================== Home Indicator ===================== */
+  .indicator{
+    position:absolute; bottom:11px; left:50%; transform:translateX(-50%);
+    width:132px; height:5px; border-radius:3px;
+    background:rgba(0,0,0,.72); z-index:25;
+  }
+
+  /* ===================== 小屏 ===================== */
+  @media (max-width:460px), (max-height:900px) and (pointer:coarse){
+    body{ padding:0; }
+    .device{ width:100%; height:100vh; height:100dvh; border-radius:0; box-shadow:none; }
+    .statusbar{ height:calc(46px + env(safe-area-inset-top)); padding-top:env(safe-area-inset-top); }
+  }
+</style>
+</head>
+<body>
+
+<div class="device">
+
+  <!-- 流动彩色背景 -->
+  <div class="bg">
+    <i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i><i class="b5"></i>
+  </div>
+
+  <!-- 内容滚动层 -->
+  <div class="pages" id="scroller">
+
+    <!-- ===== 首页 ===== -->
+    <section class="page active" id="page-home">
+      <div class="body" id="homeBody"></div>
+    </section>
+
+    <!-- ===== 收藏 ===== -->
+    <section class="page" id="page-fav">
+      <div class="body">
+        <div class="panel glass">
+          <div class="panel-head">
+            <span class="panel-title">我的收藏</span>
+            <span class="panel-sub" id="favCount">0</span>
+          </div>
+
+          <div class="tools" id="favGrid"></div>
+
+          <div class="fav-empty" id="favEmpty">
+            <svg viewBox="0 0 24 24">
+              <path d="M6.4 3.6h11.2a1 1 0 0 1 1 1v15.6L12 15.6l-6.6 4.6V4.6a1 1 0 0 1 1-1Z"/>
+            </svg>
+            <div class="t">还没有收藏</div>
+            <div class="d">在工具页点右下角的书签即可收藏</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 独家 ===== -->
+    <section class="page" id="page-exclusive">
+      <div class="body" id="exclusiveBody"></div>
+    </section>
+
+    <!-- ===== 分类 ===== -->
+    <section class="page" id="page-category">
+      <div class="body">
+        <div class="cat-wrap">
+          <aside class="catnav glass" id="catnav"></aside>
+
+          <section class="catpanel glass">
+            <div class="cp-list" id="cpList"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 顶部柔化 -->
+  <div class="topfade"></div>
+
+  <!-- 搜索面板 -->
+  <div class="searchpanel" id="searchPanel">
+    <div class="sp-inner">
+      <div class="sp-head">
+        <span class="ttl" id="spTitle">全部工具</span>
+        <span class="cnt" id="spCount">0</span>
+      </div>
+      <div class="tools" id="spResults"></div>
+      <div class="sp-empty" id="spEmpty">没有找到相关工具</div>
+    </div>
+  </div>
+
+  <!-- 顶部玻璃导航 -->
+  <header class="topbar glass">
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24">
+          <g fill="#14161C">
+            <circle cx="6.5" cy="7.9" r="2.3"/>
+            <circle cx="17.5" cy="7.9" r="2.3"/>
+            <ellipse cx="12" cy="14.2" rx="7.7" ry="6.8"/>
+          </g>
+          <circle cx="9.5" cy="12.9" r="1" fill="#FFFFFF"/>
+          <circle cx="14.5" cy="12.9" r="1" fill="#FFFFFF"/>
+          <ellipse cx="10.3" cy="17.7" rx=".95" ry=".75" fill="#FFFFFF"/>
+          <ellipse cx="13.7" cy="17.7" rx=".95" ry=".75" fill="#FFFFFF"/>
+        </svg>
+      </div>
+      <span class="name">河马工具箱</span>
+    </div>
+
+    <div class="searchbar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <circle cx="10.6" cy="10.6" r="6.1"/>
+        <path d="M15.2 15.2 20 20"/>
+      </svg>
+      <input type="text" placeholder="搜索工具" id="searchInput" />
+      <button class="s-clear" id="sClear" aria-label="清除">
+        <svg viewBox="0 0 24 24"><path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5"/></svg>
+      </button>
+    </div>
+
+    <button class="login" id="loginBtn">登录</button>
+  </header>
+
+  <!-- 状态栏 -->
+  <div class="statusbar">
+    <span>9:41</span>
+    <div class="icons">
+      <svg width="18" height="12" viewBox="0 0 17 11" fill="currentColor">
+        <rect x="0" y="7.5" width="3" height="3.5" rx="1"/>
+        <rect x="4.6" y="5.4" width="3" height="5.6" rx="1"/>
+        <rect x="9.2" y="3" width="3" height="8" rx="1"/>
+        <rect x="13.8" y="0.6" width="3" height="10.4" rx="1"/>
+      </svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor">
+        <path d="M8 11.2 5.6 8.5a3.6 3.6 0 0 1 4.8 0L8 11.2Zm-4.1-4.5L2.3 5a8.6 8.6 0 0 1 11.4 0l-1.6 1.7a6.4 6.4 0 0 0-8.2 0Z"/>
+      </svg>
+      <svg width="25" height="12" viewBox="0 0 26 12" fill="none">
+        <rect x="0.6" y="0.6" width="21" height="10.8" rx="3.4" stroke="currentColor" stroke-opacity=".35" stroke-width="1.1"/>
+        <rect x="2.3" y="2.3" width="15.5" height="7.4" rx="2.2" fill="currentColor"/>
+        <path d="M23.4 4.1v3.8c1-.3 1.6-1 1.6-1.9s-.6-1.6-1.6-1.9Z" fill="currentColor" fill-opacity=".4"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- 底部悬浮 Tab -->
+  <nav class="tabbar glass">
+    <button class="tab active" data-target="home" aria-label="首页">
+      <svg viewBox="0 0 24 24">
+        <path d="M3.8 10.2 12 3.6l8.2 6.6v9.2a1.6 1.6 0 0 1-1.6 1.6h-4.3v-6.2H9.7v6.2H5.4a1.6 1.6 0 0 1-1.6-1.6v-9.2Z"/>
+      </svg>
+      <span>首页</span>
+    </button>
+
+    <button class="tab" data-target="fav" aria-label="收藏">
+      <svg viewBox="0 0 24 24">
+        <path d="M6.4 3.6h11.2a1 1 0 0 1 1 1v15.6L12 15.6l-6.6 4.6V4.6a1 1 0 0 1 1-1Z"/>
+      </svg>
+      <span>收藏</span>
+    </button>
+
+    <button class="tab" data-target="exclusive" aria-label="独家">
+      <svg viewBox="0 0 24 24">
+        <path d="M10.8 3.8 12.4 8.2l4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4L4.8 9.8l4.4-1.6 1.6-4.4Z"/>
+        <path d="M17.7 14.2l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/>
+      </svg>
+      <span>独家</span>
+    </button>
+
+    <button class="tab" data-target="category" aria-label="分类">
+      <svg viewBox="0 0 24 24">
+        <rect x="3.8" y="3.8" width="6.8" height="6.8" rx="1.8"/>
+        <rect x="13.4" y="3.8" width="6.8" height="6.8" rx="1.8"/>
+        <rect x="3.8" y="13.4" width="6.8" height="6.8" rx="1.8"/>
+        <rect x="13.4" y="13.4" width="6.8" height="6.8" rx="1.8"/>
+      </svg>
+      <span>分类</span>
+    </button>
+  </nav>
+
+  <!-- 工具详情页 -->
+  <div class="detail" id="detail">
+    <header class="d-topbar glass">
+      <button class="d-back" id="dBack" aria-label="返回">
+        <svg viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+      </button>
+      <span class="d-title" id="dTitle">工具</span>
+      <span class="d-gap"></span>
+    </header>
+
+    <div class="d-body">
+      <div class="d-card glass">
+        <span class="d-ico" id="dIco"></span>
+        <div class="d-name" id="dName">工具</div>
+        <div class="d-desc">工具页面 · 待实现</div>
+      </div>
+    </div>
+
+    <button class="favbtn" id="favBtn" aria-label="收藏">
+      <svg viewBox="0 0 24 24"><path d="M6.4 3.6h11.2a1 1 0 0 1 1 1v15.6L12 15.6l-6.6 4.6V4.6a1 1 0 0 1 1-1Z"/></svg>
+    </button>
+  </div>
+
+  <!-- 登录遮罩 + 面板 -->
+  <div class="sheet-mask" id="loginMask"></div>
+
+  <div class="loginsheet" id="loginSheet">
+    <div class="ls-handle"></div>
+    <div class="ls-head">
+      <span class="ls-title">登录</span>
+      <button class="ls-close" id="lsClose" aria-label="关闭">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <p class="ls-sub">登录后可同步收藏与使用记录</p>
+
+    <button class="wx-btn" id="wxLogin">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M9.3 3.2C5.2 3.2 1.9 6 1.9 9.4c0 1.9 1 3.6 2.7 4.7l-.7 2.2 2.5-1.3c.8.2 1.6.3 2.4.3h.6a5.6 5.6 0 0 1-.2-1.5c0-3.3 3.1-5.9 7-5.9h.5c-.7-2.6-3.6-4.7-7.4-4.7Z"/>
+        <path d="M21.9 13.7c0-2.7-2.6-4.9-5.9-4.9s-5.9 2.2-5.9 4.9 2.6 4.9 5.9 4.9c.7 0 1.4-.1 2-.3l2.1 1.1-.5-1.9c1.4-.9 2.3-2.3 2.3-3.8Z"/>
+        <circle cx="6.9" cy="8.1" r=".95" fill="#07C160"/>
+        <circle cx="11.7" cy="8.1" r=".95" fill="#07C160"/>
+        <circle cx="14.4" cy="12.6" r=".8" fill="#07C160"/>
+        <circle cx="18.1" cy="12.6" r=".8" fill="#07C160"/>
+      </svg>
+      <span id="wxLabel">微信一键登录</span>
+    </button>
+
+    <p class="ls-tip">登录即表示同意《用户协议》与《隐私政策》</p>
+
+    <div class="ls-sep"></div>
+
+    <div class="qr-wrap">
+      <div class="qr-box" id="qrBox"></div>
+      <p class="qr-tip">扫码添加客服微信</p>
+    </div>
+  </div>
+
+  <!-- 用户菜单 -->
+  <div class="userpop" id="userPop">
+    <div class="up-name" id="upName">未登录</div>
+    <button class="up-logout" id="upLogout">退出登录</button>
+  </div>
+
+  <div class="indicator"></div>
+
+</div>
+
+<script>
+  /* ---------- Tab 切换 ---------- */
+  const tabs     = [...document.querySelectorAll('.tab')];
+  const pages    = [...document.querySelectorAll('.page')];
+  const scroller = document.getElementById('scroller');
+
+  function switchTo(target){
+    const tab = tabs.find(t => t.dataset.target === target);
+    if (!tab) return;
+    document.getElementById('detail').classList.remove('open');
+    document.getElementById('searchPanel').classList.remove('open');
+    tabs.forEach(t => t.classList.toggle('active', t === tab));
+    pages.forEach(p => p.classList.toggle('active', p.id === 'page-' + target));
+    scroller.scrollTop = 0;
+    if (target === 'fav') renderFav();
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      if (tab.classList.contains('active')) return;
+      switchTo(tab.dataset.target);
+    });
+  });
+
+  /* ---------- 图标库 ---------- */
+  const ICONS = {
+    /* 分类图标 */
+    catDaily   : '<circle cx="12" cy="12" r="3.8"/><path d="M12 2.8v2.2M12 19v2.2M2.8 12h2.2M19 12h2.2M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6"/>',
+    catQuery   : '<circle cx="10.6" cy="10.6" r="6.2"/><path d="M15.2 15.2 20 20"/>',
+    catText    : '<path d="M4.4 7.2h15.2M4.4 12h10.4M4.4 16.8h13.6"/>',
+    catConvert : '<path d="M4 8.4h12.6l-3.2-3.2M20 15.6H7.4l3.2 3.2"/>',
+    catCalc    : '<rect x="5" y="3.4" width="14" height="17.2" rx="2.8"/><path d="M8.4 7.6h7.2M8.6 12h.01M12 12h.01M15.4 12h.01M8.6 16.2h.01M12 16.2h.01M15.4 16.2h.01"/>',
+    catImage   : '<rect x="3.6" y="5.2" width="16.8" height="13.6" rx="2.6"/><path d="M3.6 15.4l4.4-4.4 3.8 3.8 2.8-2.8 5 5"/>',
+    catVideo   : '<rect x="3.4" y="5.4" width="17.2" height="13.2" rx="3"/><path d="M10.4 9.6l4.4 2.4-4.4 2.4V9.6Z"/>',
+    catAudio   : '<path d="M4.4 10.4v3.2M8.2 7.4v9.2M12 4.8v14.4M15.8 8.6v6.8M19.6 10.8v2.4"/>',
+    catCrypto  : '<rect x="4.8" y="10.4" width="14.4" height="9.6" rx="2.8"/><path d="M8.4 10.4V8.2a3.6 3.6 0 0 1 7.2 0v2.2"/><path d="M12 14.4v2"/>',
+    catMore    : '<path d="M6.4 12h.01M12 12h.01M17.6 12h.01"/>',
+
+    /* 工具图标 */
+    compress : '<rect x="3.6" y="4.6" width="16.8" height="14.8" rx="2.6"/><path d="M9.4 9.2 12 11.8l2.6-2.6M12 11.8v4.6"/>',
+    convert  : '<path d="M4 8.4h12.6l-3.2-3.2M20 15.6H7.4l3.2 3.2"/>',
+    crop     : '<path d="M6.4 2.8v14.8h14.8"/><path d="M2.8 6.4h14.8v14.8"/>',
+    person   : '<rect x="4.2" y="3.4" width="15.6" height="17.2" rx="2.6"/><circle cx="12" cy="10.2" r="2.5"/><path d="M7.8 17.8c.6-2.2 2.2-3.4 4.2-3.4s3.6 1.2 4.2 3.4"/>',
+    ocr      : '<path d="M6.4 3.6h7.2l4 4v12.2a1.6 1.6 0 0 1-1.6 1.6H6.4a1.6 1.6 0 0 1-1.6-1.6V5.2a1.6 1.6 0 0 1 1.6-1.6Z"/><path d="M13.4 3.6v4.2h4.2M8.4 13h7.2M8.4 16.6h4.6"/>',
+    hash     : '<path d="M9.4 3.8 7.8 20.2M16.2 3.8l-1.6 16.4M4.4 8.6h15.2M4 15.4h15.2"/>',
+    letter   : '<path d="M4.8 18 10 5.8l5.2 12.2M6.9 13.6h6.2"/>',
+    translate: '<path d="M3.6 5.6h9M8.1 3.4v2.2M10.4 5.6c0 3.7-2.5 6.8-6.6 8.2M5.5 9.4c1.2 2.5 3 4.1 5.6 4.9"/><path d="M12.8 20.4l3.6-9.2 3.6 9.2M14.3 17.1h4.4"/>',
+    calc     : '<rect x="5" y="3.4" width="14" height="17.2" rx="2.8"/><path d="M8.4 7.6h7.2M8.6 12h.01M12 12h.01M15.4 12h.01M8.6 16.2h.01M12 16.2h.01M15.4 16.2h.01"/>',
+    currency : '<circle cx="12" cy="12" r="8.4"/><path d="M9.2 7.8l2.8 3.6 2.8-3.6M12 11.4v5M9.8 12.9h4.4M9.8 15h4.4"/>',
+    home     : '<path d="M3.8 10.2 12 3.6l8.2 6.6v9.2a1.6 1.6 0 0 1-1.6 1.6h-4.3v-6.2H9.7v6.2H5.4a1.6 1.6 0 0 1-1.6-1.6v-9.2Z"/>',
+    qr       : '<rect x="3.6" y="3.6" width="6.2" height="6.2" rx="1.4"/><rect x="14.2" y="3.6" width="6.2" height="6.2" rx="1.4"/><rect x="3.6" y="14.2" width="6.2" height="6.2" rx="1.4"/><path d="M14.2 14.2h2.6v2.6M20.4 14.2v6.2h-6.2"/>',
+    json     : '<path d="M9.8 3.8c-2.1 0-2.6 1.1-2.6 2.9v1.8c0 1.6-.8 2.6-2.4 3.1 1.6.5 2.4 1.5 2.4 3.1v2c0 1.8.5 2.9 2.6 2.9"/><path d="M14.2 3.8c2.1 0 2.6 1.1 2.6 2.9v1.8c0 1.6.8 2.6 2.4 3.1-1.6.5-2.4 1.5-2.4 3.1v2c0 1.8-.5 2.9-2.6 2.9"/>',
+    code     : '<path d="M9.2 7.6 5 12l4.2 4.4M14.8 7.6 19 12l-4.2 4.4"/>',
+    lock     : '<rect x="4.8" y="10.4" width="14.4" height="9.6" rx="2.8"/><path d="M8.4 10.4V8.2a3.6 3.6 0 0 1 7.2 0v2.2"/><path d="M12 14.4v2"/>',
+    palette  : '<path d="M12 3.6a8.4 8.4 0 1 0 0 16.8c1.3 0 1.9-.9 1.9-1.9 0-1.5-1-1.9-1-3.1 0-1.1.9-1.9 2-1.9h1.5a3.9 3.9 0 0 0 3.9-3.9c0-3.1-3.8-5.7-8.3-5.7Z"/><path d="M8 9.6h.01M11.6 7.2h.01M7.4 14h.01"/>',
+    swatch   : '<rect x="3.6" y="4.6" width="7" height="14.8" rx="2.2"/><rect x="13.4" y="4.6" width="7" height="14.8" rx="2.2"/><path d="M13.4 11.4h7"/>',
+    contrast : '<circle cx="12" cy="12" r="8.4"/><path d="M12 3.6v16.8"/>',
+    dropper  : '<path d="M12 3.4c2.6 3.1 4.9 6 4.9 8.6a4.9 4.9 0 0 1-9.8 0c0-2.6 2.3-5.5 4.9-8.6Z"/><path d="M10.3 13.3a1.7 1.7 0 0 0 1.7 1.7"/>',
+    clock    : '<circle cx="12" cy="12" r="8.4"/><path d="M12 7.4V12l3.2 2.1"/>',
+    calendar : '<rect x="3.8" y="5.6" width="16.4" height="14.8" rx="2.8"/><path d="M3.8 10.4h16.4M8.2 3.4v4M15.8 3.4v4"/>',
+    globe    : '<circle cx="12" cy="12" r="7.6"/><path d="M4.4 12h15.2M12 4.4c1.9 2 3 4.9 3 7.6s-1.1 5.6-3 7.6c-1.9-2-3-4.9-3-7.6s1.1-5.6 3-7.6Z"/>',
+    timer    : '<circle cx="12" cy="13.2" r="7.2"/><path d="M12 9.8v3.4l2.4 1.6M9.4 3.4h5.2"/>',
+    dice     : '<rect x="4" y="4" width="16" height="16" rx="4.2"/><path d="M9 9h.01M15 15h.01M15 9h.01M9 15h.01"/>',
+    shield   : '<path d="M12 3.6 5.2 6.4v5c0 3.8 2.8 6.8 6.8 8.5 4-1.7 6.8-4.7 6.8-8.5v-5L12 3.6Z"/><path d="M9.4 11.8l1.9 1.9 3.4-3.4"/>',
+    gauge    : '<path d="M4 17.4a8.2 8.2 0 1 1 16 0"/><path d="M12 17.4l4.4-5.4"/><path d="M4 17.4h2.2M17.8 17.4H20"/>',
+    server   : '<rect x="3.6" y="3.8" width="16.8" height="6.8" rx="2.2"/><rect x="3.6" y="13.4" width="16.8" height="6.8" rx="2.2"/><path d="M7 7.2h.01M7 16.8h.01"/>',
+    plug     : '<path d="M9 3.6v4M15 3.6v4"/><path d="M6 7.6h12v3.8a6 6 0 0 1-12 0V7.6Z"/><path d="M12 17.4v3"/>',
+
+    /* 独家页图标 */
+    ai       : '<path d="M12 3.4l1.9 5.1 5.1 1.9-5.1 1.9L12 17.4l-1.9-5.1L5 10.4l5.1-1.9L12 3.4Z"/><path d="M18.4 15.2l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/>',
+    eraser   : '<path d="M9 20.4H20.4"/><path d="M3.8 16.6l9.4-9.4a2 2 0 0 1 2.8 0l1.6 1.6a2 2 0 0 1 0 2.8l-8.2 8.2H5a1.2 1.2 0 0 1-1.2-1.2v-2Z"/>',
+    video    : '<rect x="3.4" y="5.4" width="17.2" height="13.2" rx="3"/><path d="M10.4 9.6l4.4 2.4-4.4 2.4V9.6Z"/>',
+    rename   : '<path d="M3.6 12h9.6"/><path d="M10.6 8.6 14 12l-3.4 3.4"/><path d="M16.6 4.4h2.6a1.2 1.2 0 0 1 1.2 1.2v12.8a1.2 1.2 0 0 1-1.2 1.2h-2.6"/>',
+    pdf      : '<path d="M6.4 3.6h7.2l4 4v12.2a1.6 1.6 0 0 1-1.6 1.6H6.4a1.6 1.6 0 0 1-1.6-1.6V5.2a1.6 1.6 0 0 1 1.6-1.6Z"/><path d="M13.4 3.6v4.2h4.2"/><path d="M8.6 17.4v-4.2h1.5a1.2 1.2 0 0 1 0 2.4H8.6"/>',
+    audio    : '<path d="M4.4 10.4v3.2M8.2 7.4v9.2M12 4.8v14.4M15.8 8.6v6.8M19.6 10.8v2.4"/>',
+    filter   : '<path d="M3.8 5.4h16.4l-6.2 7.4v5.6l-4 2.2v-7.8L3.8 5.4Z"/>',
+    table    : '<rect x="3.6" y="4.6" width="16.8" height="14.8" rx="2.6"/><path d="M3.6 9.6h16.8M3.6 14.6h16.8M9.6 9.6v9.8"/>'
+  };
+
+  /* ---------- 名称 → 图标 智能匹配 ---------- */
+  const ICON_RULES = [
+    [/二维码|条形码|收款码/,            'qr'],
+    [/身份|证件|头像|人物/,             'person'],
+    [/马赛克|水印|修复|去痕|消除/,      'eraser'],
+    [/取色|吸管|拾色/,                  'dropper'],
+    [/配色|调色|色板|背景色|颜色|画板|绘图|涂鸦/,  'palette'],
+    [/反相|反色|对比/,                  'contrast'],
+    [/裁剪|裁切|剪切|圆角|缩放/,        'crop'],
+    [/压缩/,                            'compress'],
+    [/加密|解密|密码|密钥/,             'lock'],
+    [/Base64|MD5|SHA|RSA|AES|RC4|哈希/i,'hash'],
+    [/JSON/,                            'json'],
+    [/PDF/i,                            'pdf'],
+    [/Excel|CSV|表格|发票/i,            'table'],
+    [/OCR|识别|扫描/i,                  'ocr'],
+    [/翻译|英文/i,                      'translate'],
+    [/IP|服务器|端口|域名/i,            'server'],
+    [/转换|互转|转/,                    'convert'],
+    [/汇率|利率|货币|金额|价格/,        'currency'],
+    [/计算|年份|体积|面积|速度|温度|功热|进制|单位/, 'calc'],
+    [/世界时间|时间|日期|时钟|时区/,    'clock'],
+    [/日历|倒数日/,                     'calendar'],
+    [/经纬度|坐标|归属地|地图/,        'globe'],
+    [/商标|专利|版权/,                  'shield'],
+    [/邮编|邮政|高校|院校|大学/,        'letter'],
+    [/彩票|开奖|排序/,                  'dice'],
+    [/号码/,                            'person'],
+    [/查询|检索|搜索/,                  'catQuery'],
+    [/抽奖|随机|骰|分组|点名/,          'dice'],
+    [/计时|秒表/,                       'timer'],
+    [/GIF|视频|剪辑|字幕|抽帧/i,        'video'],
+    [/音频|音量|调速|变声|录音/,        'audio'],
+    [/图片|图像|照片|拼图|相框|贴纸|图/, 'catImage'],
+    [/文本|文字|字数|词频|符号|去重|替换|空行|换行|网址|链接|号码/, 'catText'],
+    [/安全|隐私|检测|校验|验证/,        'shield'],
+    [/智能|AI|魔法|生成/i,              'ai'],
+    [/重命名|改名/,                     'rename'],
+    [/清洗|筛选|过滤/,                  'filter']
+  ];
+
+  function pickIcon(name, fallback){
+    for (const [re, key] of ICON_RULES) if (re.test(name)) return key;
+    return fallback;
+  }
+
+
+  /* ---------- 分类数据 ---------- */
+  const CATS = [
+    { id:'daily', name:'日常', color:'46,158,143', i:'catDaily', tools:[
+      {n:'国企头像制作'}, {n:'随机抽奖'}, {n:'画板'}, {n:'二维码解析'},
+      {n:'二维码生成'}, {n:'比赛活动分组'}, {n:'身份证查询'} ]},
+
+    { id:'query', name:'查询', color:'59,125,216', i:'catQuery', tools:[
+      {n:'商标查询'}, {n:'经纬度查询'}, {n:'归属地查询'}, {n:'彩票开奖查询'},
+      {n:'高校查询'}, {n:'全球IP查询'}, {n:'世界时间'}, {n:'邮编查询'},
+      {n:'常用号码查询'} ]},
+
+    { id:'text', name:'文本', color:'123,97,201', i:'catText', tools:[
+      {n:'字数统计'}, {n:'魔法文案'}, {n:'链接批量提取'}, {n:'文本对比'},
+      {n:'时间日期格式化'}, {n:'文本转列表'}, {n:'Unicode互转'}, {n:'英文文本转换'},
+      {n:'小说格式转换'}, {n:'文本去空换行'}, {n:'文本加密'}, {n:'数字号码提取'},
+      {n:'词频统计'}, {n:'文本提取网址'}, {n:'文本去重'}, {n:'中英文符号转换'},
+      {n:'正则表达式测试'}, {n:'驼峰命名转换'}, {n:'文本替换'}, {n:'IP地址批量提取'} ]},
+
+    { id:'convert', name:'转换', color:'224,138,60', i:'catConvert', tools:[
+      {n:'时间转换'}, {n:'体积转换'}, {n:'功热转换'}, {n:'面积转换'},
+      {n:'速度转换'}, {n:'温度转换'}, {n:'汇率转换'} ]},
+
+    { id:'calc', name:'计算', color:'62,143,168', i:'catCalc', tools:[
+      {n:'日期天地计算'}, {n:'朝代年份计算'}, {n:'信用卡利率计算'} ]},
+
+    { id:'image', name:'图像', color:'217,85,127', i:'catImage', tools:[
+      {n:'图片马赛克'}, {n:'图片转Base64'}, {n:'图片裁剪'}, {n:'GIF帧修改'},
+      {n:'PNG背景色'}, {n:'GIF帧拆分'}, {n:'图片反相/反色'}, {n:'GIF压缩'},
+      {n:'图片合成GIF'}, {n:'修改图片尺寸'}, {n:'图片圆角'}, {n:'图片水印平铺'},
+      {n:'颜色预览'}, {n:'ACG表情包制作'}, {n:'图片格式转换'}, {n:'图片拼接'},
+      {n:'收款码合并'}, {n:'Base64转图片'}, {n:'图片压缩'}, {n:'图片加包浆'},
+      {n:'条形码生成'}, {n:'添加水印'}, {n:'图片取色'}, {n:'图标制作'},
+      {n:'图片切割'} ]},
+
+    { id:'video', name:'视频', color:'194,94,94', i:'catVideo', tools:[
+      {n:'视频拼接'}, {n:'视频提取音频'}, {n:'视频变速'}, {n:'视频压缩'},
+      {n:'视频转GIF'}, {n:'视频音量修改'}, {n:'视频裁剪'}, {n:'视频格式转换'} ]},
+
+    { id:'audio', name:'音频', color:'160,106,62', i:'catAudio', tools:[
+      {n:'音频音量修改'}, {n:'音频调速'}, {n:'音频压缩'},
+      {n:'音频拼接'}, {n:'音频格式转换'}, {n:'音频裁剪'} ]},
+
+    { id:'crypto', name:'加密', color:'108,123,209', i:'catCrypto', tools:[
+      {n:'RSA加密'}, {n:'MD5加密'}, {n:'Base64编码'}, {n:'SHA加密'},
+      {n:'RC4互转'}, {n:'AES加密'}, {n:'URL编码'} ]},
+
+    { id:'more', name:'其他', color:'122,132,150', i:'catMore', tools:[
+      {n:'随机数生成'}, {n:'电报码翻译'}, {n:'随机密码生成'} ]}
+  ];
+
+  const navEl   = document.getElementById('catnav');
+  const listEl  = document.getElementById('cpList');
+
+  navEl.innerHTML = CATS.map((c, i) => `
+    <button class="cnav${i === 0 ? ' active' : ''}" data-cat="${c.id}" style="--c:${c.color}">
+      <svg viewBox="0 0 24 24">${ICONS[c.i]}</svg>
+      <span>${c.name}</span>
+    </button>`).join('');
+
+  function renderCat(id){
+    const c = CATS.find(x => x.id === id) || CATS[0];
+    listEl.innerHTML = c.tools.map(t => {
+      const ik = pickIcon(t.n, c.i);
+      return `
+      <button class="catrow" style="--c:${c.color}" data-n="${t.n}" data-i="${ik}" data-c="${c.color}">
+        <span class="rowico"><svg viewBox="0 0 24 24">${ICONS[ik]}</svg></span>
+        <span class="nm">${t.n}</span>
+        <svg class="chev" viewBox="0 0 24 24"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg>
+      </button>`;
+    }).join('');
+    navEl.querySelectorAll('.cnav').forEach(b =>
+      b.classList.toggle('active', b.dataset.cat === c.id));
+  }
+
+  navEl.addEventListener('click', e => {
+    const btn = e.target.closest('.cnav');
+    if (btn) renderCat(btn.dataset.cat);
+  });
+
+  renderCat('daily');
+
+  /* ---------- 首页：全部由分类数据驱动 ---------- */
+  const homeBody = document.getElementById('homeBody');
+
+  function toolBtn(name, color, ikey){
+    return `<button class="tool" style="--c:${color}" data-n="${name}">
+      <span class="tool-ic"><svg viewBox="0 0 24 24">${ICONS[ikey]}</svg></span>
+      <span class="tool-name">${name}</span>
+    </button>`;
+  }
+
+  function renderHome(){
+    homeBody.innerHTML = CATS.map(c => `
+      <div class="panel glass">
+        <div class="panel-head">
+          <span class="panel-title">${c.name}</span>
+          <span class="panel-sub">${c.tools.length}</span>
+        </div>
+        <div class="tools">
+          ${c.tools.map(t => toolBtn(t.n, c.color, pickIcon(t.n, c.i))).join('')}
+        </div>
+      </div>`).join('');
+  }
+
+  renderHome();
+
+  /* ---------- 工具详情页（路由） ---------- */
+  const detail = document.getElementById('detail');
+  const dTitle = document.getElementById('dTitle');
+  const dName  = document.getElementById('dName');
+  const dIco   = document.getElementById('dIco');
+  const dBack  = document.getElementById('dBack');
+  const favBtn = document.getElementById('favBtn');
+
+  const favSet = new Set();   // 已收藏的工具名
+
+  function openTool(name, iconSvg, color){
+    dTitle.textContent = name;
+    dName.textContent  = name;
+    dIco.innerHTML     = iconSvg;
+    detail.style.setProperty('--c', color);
+    favBtn.dataset.name = name;
+    favBtn.classList.toggle('on', favSet.has(name));
+    detail.classList.add('open');
+  }
+
+  function closeTool(){
+    detail.classList.remove('open');
+  }
+
+  listEl.addEventListener('click', e => {
+    const row = e.target.closest('.catrow');
+    if (!row) return;
+    openTool(row.dataset.n, `<svg viewBox="0 0 24 24">${ICONS[row.dataset.i] || ''}</svg>`, row.dataset.c);
+  });
+
+  dBack.addEventListener('click', closeTool);
+
+  /* 收藏切换 */
+  favBtn.addEventListener('click', () => {
+    const n = favBtn.dataset.name;
+    if (!n) return;
+    if (favSet.has(n)) favSet.delete(n); else favSet.add(n);
+    favBtn.classList.toggle('on', favSet.has(n));
+
+    favBtn.classList.remove('pop');
+    void favBtn.offsetWidth;      // 重启动画
+    favBtn.classList.add('pop');
+
+    renderFav();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeTool();
+  });
+
+  /* ---------- 独家页 ---------- */
+  const EXCLUSIVE = [
+    { title:'独家工具集', items:[
+      { n:'批量重命名', i:'rename',   c:'59,125,216' },
+      { n:'PDF 工具箱', i:'pdf',      c:'194,94,94'  },
+      { n:'音频剪辑',   i:'audio',    c:'76,143,203' },
+      { n:'数据清洗',   i:'filter',   c:'160,106,62' },
+      { n:'表格合并',   i:'table',    c:'75,158,106' },
+      { n:'隐私检测',   i:'shield',   c:'108,123,209'},
+      { n:'自动化脚本', i:'code',     c:'201,119,59' },
+      { n:'批量压缩',   i:'compress', c:'46,158,143' }
+    ]}
+  ];
+
+  const exclusiveBody = document.getElementById('exclusiveBody');
+
+  function renderExclusive(){
+    exclusiveBody.innerHTML = EXCLUSIVE.map(g => `
+      <div class="panel glass">
+        <div class="panel-head">
+          <span class="panel-title">${g.title}</span>
+          <span class="panel-sub">${g.items.length}</span>
+        </div>
+        <div class="tools">
+          ${g.items.map(t => `
+            <button class="tool" style="--c:${t.c}">
+              <span class="tool-ic"><svg viewBox="0 0 24 24">${ICONS[t.i]}</svg></span>
+              <span class="tool-name">${t.n}</span>
+            </button>`).join('')}
+        </div>
+      </div>`).join('');
+  }
+
+  renderExclusive();
+
+  /* ---------- 搜索 ---------- */
+  const searchInput = document.getElementById('searchInput');
+  const sClear      = document.getElementById('sClear');
+  const spPanel     = document.getElementById('searchPanel');
+  const spResults   = document.getElementById('spResults');
+  const spTitle     = document.getElementById('spTitle');
+  const spCount     = document.getElementById('spCount');
+  const spEmpty     = document.getElementById('spEmpty');
+
+  /* 建立索引：合并首页按钮 + 分类数据，按名字去重 */
+  const SEARCH_INDEX = [];
+  const seenName = new Set();
+
+  function addIndex(name, svg, color){
+    if (!name || !svg || seenName.has(name)) return;
+    seenName.add(name);
+    SEARCH_INDEX.push({ name, svg, color });
+  }
+
+  /* 先收录分类工具（保证同名工具用分类色），再补首页/独家按钮 */
+  CATS.forEach(c => c.tools.forEach(t =>
+    addIndex(t.n, `<svg viewBox="0 0 24 24">${ICONS[pickIcon(t.n, c.i)] || ''}</svg>`, c.color)
+  ));
+
+  document.querySelectorAll('.tool').forEach(btn => {
+    if (btn.dataset.cat) return;            // 分类入口按钮不是工具
+    const svg = btn.querySelector('.tool-ic svg');
+    addIndex(
+      btn.querySelector('.tool-name').textContent.trim(),
+      svg ? svg.outerHTML : '',
+      (btn.style.getPropertyValue('--c') || '59,125,216').trim()
+    );
+  });
+
+  function renderSearch(q){
+    const key  = q.trim().toLowerCase();
+    const list = key ? SEARCH_INDEX.filter(x => x.name.toLowerCase().includes(key)) : SEARCH_INDEX;
+
+    spTitle.textContent = key ? '搜索结果' : '全部工具';
+    spCount.textContent = list.length;
+    spEmpty.style.display = list.length ? 'none' : 'block';
+
+    spResults.innerHTML = list.map(x => `
+      <button class="tool" style="--c:${x.color}" data-n="${x.name}">
+        <span class="tool-ic">${x.svg}</span>
+        <span class="tool-name">${x.name}</span>
+      </button>`).join('');
+  }
+
+  function openSearch(){
+    spPanel.classList.add('open');
+    renderSearch(searchInput.value);
+  }
+  function closeSearch(){
+    spPanel.classList.remove('open');
+  }
+
+  searchInput.addEventListener('focus', openSearch);
+
+  searchInput.addEventListener('input', () => {
+    spPanel.classList.add('open');
+    sClear.classList.toggle('show', searchInput.value.length > 0);
+    renderSearch(searchInput.value);
+  });
+
+  sClear.addEventListener('click', () => {
+    searchInput.value = '';
+    sClear.classList.remove('show');
+    renderSearch('');
+    closeSearch();
+    searchInput.blur();
+  });
+
+  spResults.addEventListener('click', e => {
+    const btn = e.target.closest('.tool');
+    if (!btn) return;
+    const item = SEARCH_INDEX.find(x => x.name === btn.dataset.n);
+    if (!item) return;
+    openTool(item.name, item.svg, item.color);
+    closeSearch();
+    searchInput.blur();
+  });
+
+  /* 点空白处收起 */
+  document.addEventListener('click', e => {
+    if (!spPanel.classList.contains('open')) return;
+    if (e.target.closest('#searchPanel') || e.target.closest('.searchbar')) return;
+    closeSearch();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape'){ closeSearch(); searchInput.blur(); }
+  });
+
+  /* ---------- 收藏页 ---------- */
+  const favGrid  = document.getElementById('favGrid');
+  const favEmpty = document.getElementById('favEmpty');
+  const favCount = document.getElementById('favCount');
+
+  function renderFav(){
+    const items = [...favSet]
+      .map(n => SEARCH_INDEX.find(x => x.name === n))
+      .filter(Boolean);
+
+    favCount.textContent = items.length;
+    favEmpty.style.display = items.length ? 'none' : 'block';
+    favGrid.innerHTML = items.map(x => `
+      <button class="tool" style="--c:${x.color}" data-n="${x.name}">
+        <span class="tool-ic">${x.svg}</span>
+        <span class="tool-name">${x.name}</span>
+      </button>`).join('');
+  }
+
+  favGrid.addEventListener('click', e => {
+    const btn = e.target.closest('.tool');
+    if (!btn) return;
+    const item = SEARCH_INDEX.find(x => x.name === btn.dataset.n);
+    if (!item) return;
+    openTool(item.name, item.svg, item.color);
+  });
+
+  renderFav();
+
+  /* ---------- 登录 ---------- */
+  const loginBtn   = document.getElementById('loginBtn');
+  const loginMask  = document.getElementById('loginMask');
+  const loginSheet = document.getElementById('loginSheet');
+  const lsClose    = document.getElementById('lsClose');
+  const wxLogin    = document.getElementById('wxLogin');
+  const wxLabel    = document.getElementById('wxLabel');
+  const userPop    = document.getElementById('userPop');
+  const upName     = document.getElementById('upName');
+  const upLogout   = document.getElementById('upLogout');
+
+  const AVATAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="8.6" r="3.5"/><path d="M4.9 20c.9-3.7 3.6-5.8 7.1-5.8s6.2 2.1 7.1 5.8"/></svg>';
+
+  let currentUser = null;
+
+  function applyUser(user){
+    currentUser = user;
+    if (user){
+      loginBtn.classList.add('account');
+      loginBtn.innerHTML = AVATAR_SVG;
+      upName.textContent = user.name;
+    } else {
+      loginBtn.classList.remove('account');
+      loginBtn.textContent = '登录';
+      userPop.classList.remove('open');
+    }
+    try{
+      localStorage.setItem('hb_user', user ? JSON.stringify(user) : '');
+    }catch(e){}
+  }
+
+  function openLogin(){
+    loginMask.classList.add('open');
+    loginSheet.classList.add('open');
+  }
+  function closeLogin(){
+    loginMask.classList.remove('open');
+    loginSheet.classList.remove('open');
+  }
+
+  loginBtn.addEventListener('click', () => {
+    if (currentUser) userPop.classList.toggle('open');
+    else openLogin();
+  });
+
+  lsClose.addEventListener('click', closeLogin);
+  loginMask.addEventListener('click', closeLogin);
+
+  /* 微信一键登录（演示：模拟授权结果） */
+  wxLogin.addEventListener('click', () => {
+    if (wxLogin.hasAttribute('data-busy')) return;
+    wxLogin.setAttribute('data-busy', '');
+    wxLabel.textContent = '正在登录…';
+
+    setTimeout(() => {
+      applyUser({ name: '河马同学' });
+      closeLogin();
+      wxLabel.textContent = '微信一键登录';
+      wxLogin.removeAttribute('data-busy');
+    }, 750);
+  });
+
+  upLogout.addEventListener('click', () => {
+    applyUser(null);
+    userPop.classList.remove('open');
+  });
+
+  document.addEventListener('click', e => {
+    if (!userPop.classList.contains('open')) return;
+    if (e.target.closest('#userPop') || e.target.closest('#loginBtn')) return;
+    userPop.classList.remove('open');
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape'){ closeLogin(); userPop.classList.remove('open'); }
+  });
+
+  /* 客服二维码（装饰性图案，非真实可扫码） */
+  function drawQR(el, n = 25){
+    let seed = 20261023;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+    const inFinder = (x, y) =>
+      (x < 8 && y < 8) || (x >= n - 8 && y < 8) || (x < 8 && y >= n - 8);
+
+    let cells = '';
+    for (let y = 0; y < n; y++){
+      for (let x = 0; x < n; x++){
+        if (inFinder(x, y)) continue;
+        if (rnd() > 0.5) cells += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
+      }
+    }
+
+    const finder = (ox, oy) =>
+      `<path fill-rule="evenodd" d="M${ox} ${oy}h7v7h-7z M${ox + 1} ${oy + 1}h5v5h-5z"/>` +
+      `<rect x="${ox + 2}" y="${oy + 2}" width="3" height="3"/>`;
+
+    el.innerHTML =
+      `<svg viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges">` +
+        cells + finder(0, 0) + finder(n - 7, 0) + finder(0, n - 7) +
+      `</svg>`;
+  }
+
+  drawQR(document.getElementById('qrBox'));
+
+  /* 恢复登录态 */
+  try{
+    const saved = localStorage.getItem('hb_user');
+    if (saved) applyUser(JSON.parse(saved));
+  }catch(e){}
+  /* ---------- 首页 / 独家页工具按钮 → 详情页 ---------- */
+  document.querySelectorAll('.tool').forEach(btn => {
+    if (btn.dataset.cat) return;            // 分类入口 → 走跳转逻辑
+    btn.addEventListener('click', () => {
+      const name  = btn.dataset.n || btn.querySelector('.tool-name').textContent.trim();
+      const svg   = btn.querySelector('.tool-ic svg');
+      const color = (btn.style.getPropertyValue('--c') || '59,125,216').trim();
+      if (!svg) return;
+      openTool(name, svg.outerHTML, color);
+    });
+  });
+</script>
+</body>
+</html>
